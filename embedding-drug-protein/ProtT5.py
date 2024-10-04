@@ -11,6 +11,9 @@ import numpy as np
 from tqdm import tqdm
 import re
 import os
+import time
+from tqdm import tqdm
+import h5py
 
 def get_T5_model(device):
     model = T5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_half_uniref50-enc")
@@ -21,7 +24,7 @@ def get_T5_model(device):
     return model, tokenizer
 
 def get_embeddings( model, tokenizer, seqs, per_residue, per_protein, sec_struct, 
-                   max_residues=4000, max_seq_len=1000, max_batch=100 ):
+                   max_residues=4000, max_seq_len=1000, max_batch=1 ):
 
     if sec_struct:
       sec_struct_model = load_sec_struct_model()
@@ -36,7 +39,7 @@ def get_embeddings( model, tokenizer, seqs, per_residue, per_protein, sec_struct
     seq_dict = seqs
     start = time.time()
     batch = list()
-    for seq_idx, (pdb_id, seq) in enumerate(seq_dict,1):
+    for seq_idx, (pdb_id, seq) in tqdm(enumerate(seq_dict.items(),1)):
         seq = seq
         seq_len = len(seq)
         seq = ' '.join(list(seq))
@@ -88,6 +91,13 @@ def get_embeddings( model, tokenizer, seqs, per_residue, per_protein, sec_struct
         passed_time/60, avg_time ))
     print('\n############# END #############')
     return results
+
+def save_embeddings(emb_dict,out_path):
+    with h5py.File(str(out_path), "w") as hf:
+        for sequence_id, embedding in emb_dict.items():
+            # noinspection PyUnboundLocalVariable
+            hf.create_dataset(sequence_id, data=embedding)
+    return None
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Drug')
     parser.add_argument('--dataset', type=str,
@@ -97,23 +107,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dataset = DTI(name = args.dataset)
     data = dataset.get_data()
-    drug_dict = dict(zip(data['Drug_ID'], data['Drug']))
-
+    protein_dict = dict(zip(data['Target_ID'], data['Target']))
+    print(protein_dict.items())
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Using {}".format(device))
 
 
     model, tokenizer = get_T5_model(device)
-    results = get_embeddings( model, tokenizer, drug_dict,
+    print(f"Model: {model}")
+
+    per_residue = False
+    per_protein = True
+    sec_struct = False
+    results = get_embeddings( model, tokenizer, protein_dict,
                              per_residue, per_protein, sec_struct)
-    
+
+    per_protein_path = "protein"
+    print(results["protein_embs"])
     # Store per-residue embeddings
-    if per_residue:
-      save_embeddings(results["residue_embs"], per_residue_path)
-    if per_protein:
-      save_embeddings(results["protein_embs"], per_protein_path)
-    if sec_struct:
-      write_prediction_fasta(results["sec_structs"], sec_struct_path)
+    # if per_residue:
+    #   save_embeddings(results["residue_embs"], per_residue_path)
+    # if per_protein:
+    #   save_embeddings(results["protein_embs"], per_protein_path)
+    # if sec_struct:
+    #   write_prediction_fasta(results["sec_structs"], sec_struct_path)
 
 
-https://colab.research.google.com/drive/1TUj-ayG3WO52n5N50S7KH9vtt6zRkdmj?usp=sharing#scrollTo=ZQotVM94S7NR

@@ -8,3 +8,4 @@ tape-proteins==0.5
 transformers
 unimol_tools
 sentencepiece==0.2.0
+wandb
