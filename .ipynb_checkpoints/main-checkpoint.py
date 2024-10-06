@@ -169,7 +169,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=2024, help='Random Seed')
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
-    parser.add_argument('--epochs', type=int, default=10)    # --kiba 3000
+    parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512, help='Batch Size for Train(Validation/Test)')
     parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--edge_dropout_rate', type=float, default=0)   # --kiba 0.

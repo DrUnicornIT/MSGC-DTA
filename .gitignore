@@ -1,3 +1,9 @@
 embedding-drug-protein/data/
 data/
 wandb/
+data.zip
+embedding-drug-protein/drug
+embedding-drug-protein/protein
+embedding-drug-protein/embedding
+embedding-drug-protein/model
+embedding-drug-protein/gin*
