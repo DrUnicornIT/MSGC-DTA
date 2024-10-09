@@ -47,11 +47,10 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
         loss = loss_fn(output, data.y.view(-1, 1).float().to(device)) + ssl_loss
         loss.backward()
         optimizer.step()
-        # scheduler.step()
+        scheduler.step()
 
         epoch_loss += loss.item()
 
-        
         if batch_idx % LOG_INTERVAL == 0:
             print('Train epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * batch_size, len(train_loader.dataset), 100. * batch_idx / len(train_loader),
@@ -117,6 +116,7 @@ def train_predict():
     print(t_1d_embeds.shape)
     print(t_2d_embeds.shape)
     print(t_3d_embeds.shape)
+    
     d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
     t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
 
@@ -138,12 +138,12 @@ def train_predict():
     predictor.to(device)
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, chain(model.parameters(), predictor.parameters())), lr=args.lr, weight_decay=0)
-    # scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
-    #                                                 max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
+                                                    max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
     print("Start training...")
     for epoch in range(args.epochs):
         train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
-              args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, None)
+              args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
         G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
 
