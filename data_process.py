@@ -219,12 +219,15 @@ def atom_features(atom):
 
 def get_drug_molecule_graph(ligands):
     smile_graph = OrderedDict()
+    smile_graph_neighbor = OrderedDict()
 
     for d in ligands.keys():
         lg = Chem.MolToSmiles(Chem.MolFromSmiles(ligands[d]), isomericSmiles=True)
-        smile_graph[d] = smile_to_graph(lg)
+        graph = smile_to_graph(lg)
+        smile_graph[d] = graph[:3]
+        smile_graph_neighbor[d] = graph[:2] + graph[3]
 
-    return smile_graph
+    return smile_graph, smile_graph_neighbor
 
 
 def smile_to_graph(smile):
@@ -246,10 +249,24 @@ def smile_to_graph(smile):
         mol_adj[e1, e2] = 1
     mol_adj += np.matrix(np.eye(mol_adj.shape[0]))
     index_row, index_col = np.where(mol_adj >= 0.5)
+
     for i, j in zip(index_row, index_col):
         edge_index.append([i, j])
 
-    return c_size, features, edge_index
+    # _________________________________
+    adj_matrix = np.zeros((c_size, c_size))
+    for e1, e2 in edges:
+        adj_matrix[e1, e2] = 1
+        adj_matrix[e2, e1] = 1 
+    new_adj_matrix = np.dot(adj_matrix, adj_matrix)
+
+    index_row, index_col = np.where(new_adj_matrix > 0)
+
+    edge_index_neighbor = []
+    for i, j in zip(index_row, index_col):
+        edge_index_neighbor.append([i, j])
+                
+    return (c_size, features, edge_index, edge_index_neighbor)
 
 
 def get_target_molecule_graph(proteins, dataset):

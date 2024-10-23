@@ -15,7 +15,7 @@ from data_process import load_data, process_data, get_drug_molecule_graph, get_t
 from utils import GraphDataset, collate, model_evaluate
 from models import CSCoDTA, PredictModule
 
-def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, lr, epoch,
+def train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, lr, epoch,
           batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler):
     print('Training on {} samples...'.format(len(train_loader.dataset)))
     # Calculate total number of parameters
@@ -34,6 +34,8 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
     # optimizer = torch.optim.Adam(
     #     filter(lambda p: p.requires_grad, chain(model.parameters(), predictor.parameters())), lr=lr, weight_decay=0)
     drug_graph_batchs = list(map(lambda graph: graph.to(device), drug_graphs_DataLoader))
+    drug_graph_neighbor_batchs = list(map(lambda graph: graph.to(device), drug_graphs_neighbor_DataLoader))
+
     target_graph_batchs = list(map(lambda graph: graph.to(device), target_graphs_DataLoader))
 
     epoch_loss = 0
@@ -41,7 +43,7 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
     
     for batch_idx, data in enumerate(train_loader):
         optimizer.zero_grad()
-        ssl_loss, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs,
+        ssl_loss, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs, drug_graph_neighbor_batchs,
                                                                   target_graph_batchs, drug_pos, target_pos)
         output, _ = predictor(data.to(device), drug_embedding, target_embedding)
         loss = loss_fn(output, data.y.view(-1, 1).float().to(device)) + ssl_loss
@@ -92,11 +94,18 @@ def train_predict():
     
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
-    drug_graphs_dict = get_drug_molecule_graph(
+    #________________________________________________
+    drug_graphs_dict, drug_graphs_neighbor_dict = get_drug_molecule_graph(
         json.load(open(f'data/{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
+    
     drug_graphs_Data = GraphDataset(graphs_dict=drug_graphs_dict, dttype="drug")
     drug_graphs_DataLoader = torch.utils.data.DataLoader(drug_graphs_Data, shuffle=False, collate_fn=collate,
                                                          batch_size=affinity_graph.num_drug)
+    
+    drug_graphs_neighbor_Data = GraphDataset(graphs_dict=drug_graphs_neighbor_dict, dttype="drug")
+    drug_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(drug_graphs_neighbor_Data, shuffle=False, collate_fn=collate,
+                                                         batch_size=affinity_graph.num_drug)
+    #________________________________________________
     target_graphs_dict = get_target_molecule_graph(
         json.load(open(f'data/{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
     target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
@@ -142,7 +151,7 @@ def train_predict():
                                                     max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
     print("Start training...")
     for epoch in range(args.epochs):
-        train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
+        train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
               args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
         G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)

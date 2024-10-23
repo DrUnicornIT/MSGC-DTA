@@ -21,6 +21,48 @@ class Feature_Fusion(nn.Module):
         fout2 = fd * w2 + fp * (1 - w2)
         return fout2
 
+class GCNBlock_MIX(nn.Module):
+    def __init__(self, gcn_layers_dim, dropout_rate=0., relu_layers_index=[], dropout_layers_index=[]):
+        super(GCNBlock, self).__init__()
+
+        self.conv_layers = nn.ModuleList()
+        self.fusion_layers = nn.ModuleList()
+        for i in range(len(gcn_layers_dim) - 1):
+            conv_layer = GCNConv(gcn_layers_dim[i], gcn_layers_dim[i + 1])
+            self.conv_layers.append(conv_layer)
+            fusion = nn.Linear(gcn_layers_dim[i+1] * 2, gcn_layers_dim[i+1])
+            self.fusion_layers.append(fusion)
+
+        self.conv_neighbor_layers = nn.ModuleList()
+        for i in range(len(gcn_layers_dim) - 1):
+            conv_layer = GCNConv(gcn_layers_dim[i], gcn_layers_dim[i + 1])
+            self.conv_neighbor_layers.append(conv_layer)
+        
+
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout_rate)
+        self.relu_layers_index = relu_layers_index
+        self.dropout_layers_index = dropout_layers_index
+
+    def forward(self, x, edge_index, edge_weight, batch, edge_index_neighbor, edge_weight_neighbor, batch_neighbor_neighbor):
+        output = x
+        embeddings = []
+        for conv_layer_index in range(len(self.conv_layers)):
+            output_origin = self.conv_layers[conv_layer_index](output, edge_index, edge_weight)
+            output_neighbor = self.conv_neighbor_layers[conv_layer_index](output, edge_index_neighbor, edge_weight_neighbor)
+            output = torch.cat((output_origin, output_neighbor), dim = -1)
+            output = self.fusion_layers[conv_layer_index](output)
+            
+            if conv_layer_index in self.relu_layers_index:
+                output = self.relu(output)
+            if conv_layer_index in self.dropout_layers_index:
+                output = self.dropout(output)
+
+
+            embeddings.append(gep(output, batch))
+
+        return embeddings
+
 class GCNBlock(nn.Module):
     def __init__(self, gcn_layers_dim, dropout_rate=0., relu_layers_index=[], dropout_layers_index=[]):
         super(GCNBlock, self).__init__()
@@ -40,6 +82,7 @@ class GCNBlock(nn.Module):
         embeddings = []
         for conv_layer_index in range(len(self.conv_layers)):
             output = self.conv_layers[conv_layer_index](output, edge_index, edge_weight)
+
             if conv_layer_index in self.relu_layers_index:
                 output = self.relu(output)
             if conv_layer_index in self.dropout_layers_index:
@@ -48,6 +91,23 @@ class GCNBlock(nn.Module):
 
         return embeddings
 
+class GCNModel_MIX(nn.Module):
+    def __init__(self, layers_dim):
+        super(GCNModel_MIX, self).__init__()
+
+        self.num_layers = len(layers_dim) - 1
+        self.graph_conv = GCNBlock_MIX(layers_dim, relu_layers_index=list(range(self.num_layers)))
+
+    def forward(self, graph_batchs, graph_neighbor_batchs):
+        embedding_batchs = list(
+                map(lambda graph, graph_neighbor: self.graph_conv(graph.x, graph.edge_index, None, graph.batch, graph_neighbor.edge_index, None, graph_neighbor.batch), (graph_batchs, graph_neighbor_batchs)))
+        
+
+        embeddings = []
+        for i in range(self.num_layers):
+            embeddings.append(torch.cat(list(map(lambda embedding_batch: embedding_batch[i], embedding_batchs)), 0))
+
+        return embeddings
 
 class GCNModel(nn.Module):
     def __init__(self, layers_dim):
@@ -217,12 +277,18 @@ class CSCoDTA(nn.Module):
         self.drug_contrast = Contrast(ns_dims[-1], embedding_dim, tau, lam)
         self.target_contrast = Contrast(ns_dims[-1], embedding_dim, tau, lam)
 
-    def forward(self, affinity_graph, drug_graph_batchs, target_graph_batchs, drug_pos, target_pos):
+    def forward(self, affinity_graph, drug_graph_batchs, drug_graph_neighbor_batchs, target_graph_batchs, drug_pos, target_pos):
         num_d = affinity_graph.num_drug
 
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
         
+        #______________
         drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)[-1] ## TODO
+        drug_graph_embedding_neighbor_dynamic = self.drug_graph_conv(drug_graph_neighbor_batchs)[-1] ## TODO
+        #_________________
+
+
+        
         target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)[-1] ## TODO
         drug_graph_embedding_static = self.drug_embeddings()
         target_graph_embedding_static = self.target_embeddings()
