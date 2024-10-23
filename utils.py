@@ -111,6 +111,44 @@ def collate(data_list):
     batch = Batch.from_data_list(data_list)
     return batch
 
+def get_ci(y, f):
+    ind = np.argsort(y)
+    y = y[ind]
+    f = f[ind]
+    i = len(y) - 1
+    j = i - 1
+    z = 0.0
+    S = 0.0
+    while i > 0:
+        while j >= 0:
+            if y[i] > y[j]:
+                z = z + 1
+                u = f[i] - f[j]
+                if u > 0:
+                    S = S + 1
+                elif u == 0:
+                    S = S + 0.5
+            j = j - 1
+        i = i - 1
+        j = i - 1
+    ci = S / z
+    return ci
+
+def get_cindex(Y, P):
+    summ = 0
+    pair = 0
+
+    for i in range(1, len(Y)):
+        for j in range(0, i):
+            if i is not j:
+                if (Y[i] > Y[j]):
+                    pair += 1
+                    summ += 1 * (P[i] > P[j]) + 0.5 * (P[i] == P[j])
+
+    if pair is not 0:
+        return summ / pair
+    else:
+        return 0
 
 def get_mse(Y, P):
     Y = np.array(Y)
@@ -151,7 +189,10 @@ def squared_error_zero(y_obs, y_pred):
     return 1 - (upp / down)
 
 
-def model_evaluate(Y, P):
-
-    return (get_mse(Y, P),
-            get_rm2(Y, P))
+def model_evaluate(Y, P, full = False):
+    if full == True:
+        return (get_mse(Y, P),
+                get_rm2(Y, P), get_cindex(Y, P), get_ci(Y,P))
+    else:
+        return (get_mse(Y, P),
+                get_rm2(Y, P), 0, 0)

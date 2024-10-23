@@ -1,7 +1,0 @@
-2024-10-03 17:36:20 | unimol_tools/weights/weighthub.py | 17 | INFO | Uni-Mol Tools | Weights will be downloaded to default directory: /data/conda/congn/envs/MSGC-DTA/lib/python3.8/site-packages/unimol_tools/weights
-2024-10-03 17:36:20 | unimol_tools/weights/weighthub.py | 33 | INFO | Uni-Mol Tools | Downloading mol_pre_all_h_220816.pt
-2024-10-03 17:36:21 | unimol_tools/weights/weighthub.py | 33 | INFO | Uni-Mol Tools | Downloading mol.dict.txt
-2024-10-03 17:36:22 | unimol_tools/models/unimol.py | 120 | INFO | Uni-Mol Tools | Loading pretrained weights from /data/conda/congn/envs/MSGC-DTA/lib/python3.8/site-packages/unimol_tools/weights/mol_pre_all_h_220816.pt
-2024-10-03 17:36:23 | unimol_tools/data/conformer.py | 89 | INFO | Uni-Mol Tools | Start generating conformers...
-2024-10-03 17:36:23 | unimol_tools/data/conformer.py | 93 | INFO | Uni-Mol Tools | Succeed to generate conformers for 100.00% of molecules.
-2024-10-03 17:36:23 | unimol_tools/data/conformer.py | 95 | INFO | Uni-Mol Tools | Succeed to generate 3d conformers for 100.00% of molecules.

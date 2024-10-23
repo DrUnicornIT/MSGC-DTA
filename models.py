@@ -5,6 +5,21 @@ from torch.nn.functional import normalize
 from torch_geometric.nn import DenseGCNConv, GCNConv, global_mean_pool as gep
 from torch_geometric.utils import dropout_adj
 
+class Feature_Fusion(nn.Module):
+    def __init__(self, channels=128 * 2, r=4):
+        super(Feature_Fusion, self).__init__()
+        inter_channels = int(channels // r)
+        layers = [nn.Linear(channels, inter_channels), nn.ReLU(inplace=True), nn.Dropout(0.2), nn.Linear(inter_channels, channels)]
+        self.att1 = nn.Sequential(*layers)
+        self.att2 = nn.Sequential(*layers)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, fd, fp):
+        w1 = self.sigmoid(self.att1(fd + fp))
+        fout1 = fd * w1 + fp * (1 - w1)
+        w2 = self.sigmoid(self.att2(fout1))
+        fout2 = fd * w2 + fp * (1 - w2)
+        return fout2
 
 class GCNBlock(nn.Module):
     def __init__(self, gcn_layers_dim, dropout_rate=0., relu_layers_index=[], dropout_layers_index=[]):
@@ -226,9 +241,10 @@ class CSCoDTA(nn.Module):
 class PredictModule(nn.Module):
     def __init__(self, embedding_dim=128, output_dim=1):
         super(PredictModule, self).__init__()
+        self.dtf = Feature_Fusion(channels= 2 * embedding_dim)
 
-        self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
-        mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
+        self.prediction_func = lambda x, y: torch.cat((x, y), -1)
+        mlp_layers_dim = [2 * embedding_dim, 1024, 512, output_dim]
 
         self.mlp = LinearBlock(mlp_layers_dim, 0.1, relu_layers_index=[0, 1], dropout_layers_index=[0, 1])
 
@@ -237,8 +253,10 @@ class PredictModule(nn.Module):
 
         drug_feature = drug_embedding[drug_id.int().cpu().numpy()]
         target_feature = target_embedding[target_id.int().cpu().numpy()]
+        
+        concat_feature = self.dtf(drug_feature, target_feature)
 
-        concat_feature = self.prediction_func(drug_feature, target_feature)
+        # concat_feature = self.prediction_func(drug_feature, target_feature)
         mlp_embeddings = self.mlp(concat_feature)
         link_embeddings = mlp_embeddings[-2]
         out = mlp_embeddings[-1]

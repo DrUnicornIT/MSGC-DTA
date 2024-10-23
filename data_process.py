@@ -85,8 +85,10 @@ def process_data(affinity_mat, dataset, num_pos, pos_threshold):
     for i in range(len(train_file)):
         train_index += train_file[i]
     test_index = json.load(open(dataset_path + 'S1_test_set.txt'))
-
+    print(train_index[0:10])
     rows, cols = np.where(np.isnan(affinity_mat) == False)
+    print(len(rows))
+    print(len(cols))
     train_rows, train_cols = rows[train_index], cols[train_index]
     train_Y = affinity_mat[train_rows, train_cols]
     train_dataset = DTADataset(drug_ids=train_rows, target_ids=train_cols, y=train_Y)
@@ -112,6 +114,7 @@ def get_affinity_graph(dataset, adj, num_pos, pos_threshold):
     dtd = np.nan_to_num(dtd)
     dtd += np.eye(num_drug, num_drug)
     dtd = dtd.astype("float32")
+    # d_d = np.loadtxt(dataset_path + 'drug-drug-sim.txt')
     d_d = np.loadtxt(dataset_path + 'drug-drug-sim.txt', delimiter=',')
     dAll = dtd + d_d
     drug_pos = np.zeros((num_drug, num_drug))
@@ -133,6 +136,7 @@ def get_affinity_graph(dataset, adj, num_pos, pos_threshold):
     tdt = np.nan_to_num(tdt)
     tdt += np.eye(num_target, num_target)
     tdt = tdt.astype("float32")
+    # t_t = np.loadtxt(dataset_path + 'target-target-sim.txt')
     t_t = np.loadtxt(dataset_path + 'target-target-sim.txt', delimiter=',')
     tAll = tdt + t_t
     target_pos = np.zeros((num_target, num_target))
@@ -151,6 +155,10 @@ def get_affinity_graph(dataset, adj, num_pos, pos_threshold):
         adj[adj != 0] -= 5
         adj_norm = minMaxNormalize(adj, 0)
     elif dataset == "kiba":
+        adj_refine = denseAffinityRefine(adj.T, 150)
+        adj_refine = denseAffinityRefine(adj_refine.T, 40)
+        adj_norm = minMaxNormalize(adj_refine, 0)
+    elif dataset == "kiba-229":
         adj_refine = denseAffinityRefine(adj.T, 150)
         adj_refine = denseAffinityRefine(adj_refine.T, 40)
         adj_norm = minMaxNormalize(adj_refine, 0)

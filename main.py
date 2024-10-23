@@ -47,7 +47,7 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
         loss = loss_fn(output, data.y.view(-1, 1).float().to(device)) + ssl_loss
         loss.backward()
         optimizer.step()
-        # scheduler.step()
+        scheduler.step()
 
         epoch_loss += loss.item()
 
@@ -103,13 +103,13 @@ def train_predict():
     target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
     target_graphs_DataLoader = torch.utils.data.DataLoader(target_graphs_Data, shuffle=False, collate_fn=collate,
                                                            batch_size=affinity_graph.num_target)
-    d_1d_embeds = np.load('data/results/unique_drug_Mol2Vec_EMB_KIBA.npy')
-    d_2d_embeds = np.load('data/results/unique_drug_GIN_EMB_KIBA.npy')
-    d_3d_embeds = np.load('data/results/unique_drug_E3nn_EMB_KIBA.npy')
+    d_1d_embeds = np.load('data/results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
+    d_2d_embeds = np.load('data/results/unique_drug_GIN_EMB_DAVIS.npy')
+    d_3d_embeds = np.load('data/results/unique_drug_E3nn_EMB_DAVIS.npy')
     
-    t_1d_embeds = np.load('data/results/unique_protein_ProVec_EMB_KIBA.npy') 
-    t_2d_embeds = np.load('data/results/unique_protein_BERT_EMB_KIBA.npy')
-    t_3d_embeds = np.load('data/results/unique_protein_ESM_EMB_KIBA.npy')
+    t_1d_embeds = np.load('data/results/unique_protein_ProVec_EMB_DAVIS.npy') 
+    t_2d_embeds = np.load('data/results/unique_protein_BERT_EMB_DAVIS.npy')
+    t_3d_embeds = np.load('data/results/unique_protein_ESM_EMB_DAVIS.npy')
     
     print(d_1d_embeds.shape)
     print(d_2d_embeds.shape)
@@ -138,44 +138,42 @@ def train_predict():
     predictor.to(device)
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, chain(model.parameters(), predictor.parameters())), lr=args.lr, weight_decay=0)
-    # scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
-    #                                                 max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
+                                                    max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
     print("Start training...")
     for epoch in range(args.epochs):
         train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
-              args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, None)
+              args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
         G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
-
-        r = model_evaluate(G, P)
+        if epoch % 1000 == 0:
+            r = model_evaluate(G, P, full = True)
+        else: 
+            r = model_evaluate(G, P, full = False)
         print("result:", r)
-        wandb.log({"test_MSE": r[0], "test_CI": r[1]})
+        wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
 
     print('\npredicting for test data')
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader, affinity_graph,
                 drug_pos, target_pos)
-    result = model_evaluate(G, P)
+    result = model_evaluate(G, P, full = True)
     print("result:", result)
     wandb.finish()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--mode', type=str, default="test", )
-
-    parser.add_argument('--dataset', type=str, default='kiba')
-    
-    
     parser.add_argument('--seed', type=int, default=2024, help='Random Seed')
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
-    parser.add_argument('--epochs', type=int, default=10)    # --kiba 3000
-    parser.add_argument('--batch_size', type=int, default=512, help='Batch Size for Train(Validation/Test)')
+    parser.add_argument('--dataset', type=str, default='davis')
+    parser.add_argument('--epochs', type=int, default=2)    # --kiba 3000
+    parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--lr', type=float, default=0.0002)
-    parser.add_argument('--edge_dropout_rate', type=float, default=0)   # --kiba 0.
+    parser.add_argument('--edge_dropout_rate', type=float, default=0.2)   # --kiba 0.
     parser.add_argument('--tau', type=float, default=0.8)
     parser.add_argument('--lam', type=float, default=0.5)
-    parser.add_argument('--num_pos', type=int, default=10)    # --kiba 10
+    parser.add_argument('--num_pos', type=int, default=3)    # --kiba 10
     parser.add_argument('--pos_threshold', type=float, default=8.0)
 
     args, _ = parser.parse_known_args()
