@@ -6,3 +6,5 @@ embedding-drug-protein/protein/
 embedding-drug-protein/gin_supervised_contextpred_pre_trained.pth
 data/
 wandb/
+.ipynb_checkpoints
+__pycache__
