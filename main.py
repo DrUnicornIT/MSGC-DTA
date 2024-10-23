@@ -51,7 +51,6 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
 
         epoch_loss += loss.item()
 
-        
         if batch_idx % LOG_INTERVAL == 0:
             print('Train epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * batch_size, len(train_loader.dataset), 100. * batch_idx / len(train_loader),
@@ -117,6 +116,7 @@ def train_predict():
     print(t_1d_embeds.shape)
     print(t_2d_embeds.shape)
     print(t_3d_embeds.shape)
+    
     d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
     t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
 
