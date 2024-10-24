@@ -108,15 +108,15 @@ def train_predict():
     drug_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(drug_graphs_neighbor_Data, shuffle=False, collate_fn=collate,
                                                          batch_size=affinity_graph.num_drug)
     #________________________________________________
-    target_graphs_dict = get_target_molecule_graph(
+    target_graphs_dict, target_graphs_neighbor_dict = get_target_molecule_graph(
         json.load(open(f'/kaggle/input/msgc-dta/MSGC-DTA/data/{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
     target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
     target_graphs_DataLoader = torch.utils.data.DataLoader(target_graphs_Data, shuffle=False, collate_fn=collate,
                                                            batch_size=affinity_graph.num_target)
     
-    # target_graphs_neighbor_Data = GraphDataset(graphs_dict=target_graphs_neighbor_dict, dttype="target")
-    # target_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(target_graphs_neighbor_Data, shuffle=False, collate_fn=collate,
-    #                                                        batch_size=affinity_graph.num_target)
+    target_graphs_neighbor_Data = GraphDataset(graphs_dict=target_graphs_neighbor_dict, dttype="target")
+    target_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(target_graphs_neighbor_Data, shuffle=False, collate_fn=collate,
+                                                           batch_size=affinity_graph.num_target)
     #________________________________________________
     
     d_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
@@ -159,9 +159,9 @@ def train_predict():
                                                     max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
     print("Start training...")
     for epoch in range(args.epochs):
-        train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
+        train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader, args.lr, epoch+1,
               args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
-        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader,
+        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader,
                     affinity_graph, drug_pos, target_pos)
         if epoch % 1000 == 0:
             r = model_evaluate(G, P, full = True)
@@ -171,7 +171,7 @@ def train_predict():
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
 
     print('\npredicting for test data')
-    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader,
+    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader,
                 affinity_graph, drug_pos, target_pos)
     result = model_evaluate(G, P, full = True)
     print("result:", result)

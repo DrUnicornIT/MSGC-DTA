@@ -255,7 +255,7 @@ def smile_to_graph(smile):
 
     # _________________________________
     adj_matrix = np.zeros((c_size, c_size))
-    for e1, e2 in edges:
+    for e1, e2 in edge_index:
         adj_matrix[e1, e2] = 1
         adj_matrix[e2, e1] = 1 
     new_adj_matrix = np.dot(adj_matrix, adj_matrix)
@@ -274,11 +274,12 @@ def get_target_molecule_graph(proteins, dataset):
     contac_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/pconsc4'    
 
     target_graph = OrderedDict()
+    target_graph_neighbor = OrderedDict()
     for t in proteins.keys():
-        g = target_to_graph(t, proteins[t], contac_path, msa_path)
-        target_graph[t] = g
-
-    return target_graph
+        c_size, features, edge_index, edge_index_neighbor = target_to_graph(t, proteins[t], contac_path, msa_path)
+        target_graph[t] = (c_size, features, edge_index)
+        target_graph_neighbor[t] = (c_size, features, edge_index_neighbor)
+    return target_graph, target_graph_neighbor
 
 
 def target_to_graph(target_key, target_sequence, contact_dir, aln_dir):
@@ -295,7 +296,20 @@ def target_to_graph(target_key, target_sequence, contact_dir, aln_dir):
         target_edge_index.append([i, j])
     target_edge_index = np.array(target_edge_index)
 
-    return target_size, target_feature, target_edge_index
+    # _________________________________
+    adj_matrix = np.zeros((target_size, target_size))
+    for e1, e2 in target_edge_index:
+        adj_matrix[e1, e2] = 1
+        adj_matrix[e2, e1] = 1 
+    new_adj_matrix = np.dot(adj_matrix, adj_matrix)
+
+    index_row, index_col = np.where(new_adj_matrix > 0)
+
+    edge_index_neighbor = []
+    for i, j in zip(index_row, index_col):
+        edge_index_neighbor.append([i, j])
+    
+    return target_size, target_feature, target_edge_index, edge_index_neighbor
 
 
 def target_feature(aln_file, pro_seq):
