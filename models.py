@@ -23,7 +23,7 @@ class Feature_Fusion(nn.Module):
 
 class GCNBlock_MIX(nn.Module):
     def __init__(self, gcn_layers_dim, dropout_rate=0., relu_layers_index=[], dropout_layers_index=[]):
-        super(GCNBlock, self).__init__()
+        super(GCNBlock_MIX, self).__init__()
 
         self.conv_layers = nn.ModuleList()
         self.fusion_layers = nn.ModuleList()
