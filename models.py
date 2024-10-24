@@ -311,6 +311,9 @@ class CSCoDTA(nn.Module):
         self.output_dim = embedding_dim * 2
 
         self.affinity_graph_conv = DenseGCNModel(ns_dims, dropout_rate)
+        
+        self.drug_graph_conv_op = GCNModel_MIX(d_ms_dims)
+
         self.drug_graph_conv = GATModel(d_ms_dims)
         self.target_graph_conv = GATModel(t_ms_dims)
 
@@ -326,7 +329,7 @@ class CSCoDTA(nn.Module):
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
         
         #______________
-        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1] ## TODO
+        drug_graph_embedding_dynamic = self.drug_graph_conv_op(drug_graph_batchs, drug_graph_neighbor_batchs)[-1] ## TODO
         # target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1] ## TODO
         print(drug_graph_embedding_dynamic)
         print(len(drug_graph_embedding_dynamic))
