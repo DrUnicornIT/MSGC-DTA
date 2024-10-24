@@ -165,8 +165,8 @@ def train_predict():
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
 
     print('\npredicting for test data')
-    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader, affinity_graph,
-                drug_pos, target_pos)
+    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, 
+                affinity_graph, drug_pos, target_pos)
     result = model_evaluate(G, P, full = True)
     print("result:", result)
     wandb.finish()
