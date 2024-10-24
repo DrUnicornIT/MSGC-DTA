@@ -44,7 +44,7 @@ class GCNBlock_MIX(nn.Module):
         self.relu_layers_index = relu_layers_index
         self.dropout_layers_index = dropout_layers_index
 
-    def forward(self, x, edge_index, edge_weight, batch, edge_index_neighbor, edge_weight_neighbor, batch_neighbor_neighbor):
+    def forward(self, x, edge_index, edge_weight, batch, edge_index_neighbor, edge_weight_neighbor, batch_neighbor):
         output = x
         embeddings = []
         for conv_layer_index in range(len(self.conv_layers)):
@@ -100,8 +100,9 @@ class GCNModel_MIX(nn.Module):
 
     def forward(self, graph_batchs, graph_neighbor_batchs):
         embedding_batchs = list(
-                map(lambda graph, graph_neighbor: self.graph_conv(graph.x, graph.edge_index, None, graph.batch, graph_neighbor.edge_index, None, graph_neighbor.batch), (graph_batchs, graph_neighbor_batchs)))
-        
+            map(lambda pair: self.graph_conv(pair[0].x, pair[0].edge_index, None, pair[0].batch, pair[1].edge_index, None, pair[1].batch),
+                zip(graph_batchs, graph_neighbor_batchs))
+        )
 
         embeddings = []
         for i in range(self.num_layers):
