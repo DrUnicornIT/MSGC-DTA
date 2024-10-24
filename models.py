@@ -312,8 +312,8 @@ class CSCoDTA(nn.Module):
 
         self.affinity_graph_conv = DenseGCNModel(ns_dims, dropout_rate)
         
-        self.drug_graph_conv = GCNModel(d_ms_dims)
-        self.target_graph_conv = GCNModel(t_ms_dims)
+        self.drug_graph_conv = GCNModel_MIX(d_ms_dims)
+        self.target_graph_conv = GCNModel_MIX(t_ms_dims)
 
         self.drug_embeddings = EnsembleEmbedding(d_embeddings, sizes = (100, 300, 512), target_size = 128)
         self.target_embeddings = EnsembleEmbedding(t_embeddings, sizes = (100, 768, 1280), target_size = 128)
@@ -327,8 +327,8 @@ class CSCoDTA(nn.Module):
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
         
         #______________
-        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)[-1]
-        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)[-1]
+        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1]
+        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1]
         #_________________
         drug_graph_embedding_static = self.drug_embeddings()
         target_graph_embedding_static = self.target_embeddings()
@@ -349,11 +349,11 @@ class PredictModule(nn.Module):
         super(PredictModule, self).__init__()
         self.dtf = Feature_Fusion(channels= 2 * embedding_dim)
 
-        self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
-        mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
+        # self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
+        # mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
 
-        # self.prediction_func = lambda x, y: torch.cat((x, y), -1)
-        # mlp_layers_dim = [2 * embedding_dim, 1024, 512, output_dim]
+        self.prediction_func = lambda x, y: torch.cat((x, y), -1)
+        mlp_layers_dim = [2 * embedding_dim, 1024, 512, output_dim]
 
         self.mlp = LinearBlock(mlp_layers_dim, 0.1, relu_layers_index=[0, 1], dropout_layers_index=[0, 1])
 
@@ -363,9 +363,9 @@ class PredictModule(nn.Module):
         drug_feature = drug_embedding[drug_id.int().cpu().numpy()]
         target_feature = target_embedding[target_id.int().cpu().numpy()]
         
-        # concat_feature = self.dtf(drug_feature, target_feature)
+        concat_feature = self.dtf(drug_feature, target_feature)
 
-        concat_feature = self.prediction_func(drug_feature, target_feature)
+        # concat_feature = self.prediction_func(drug_feature, target_feature)
         
         mlp_embeddings = self.mlp(concat_feature)
         link_embeddings = mlp_embeddings[-2]
