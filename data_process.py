@@ -266,7 +266,7 @@ def smile_to_graph(smile):
     for i, j in zip(index_row, index_col):
         edge_index_neighbor.append([i, j])
                 
-    return (c_size, features, edge_index, edge_index_neighbor)
+    return [c_size, features, edge_index, edge_index_neighbor]
 
 
 def get_target_molecule_graph(proteins, dataset):
