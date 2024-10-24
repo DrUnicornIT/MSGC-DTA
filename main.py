@@ -64,7 +64,7 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_g
     wandb.log({"mean_loss": mean_loss})
 
 
-def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs_DataLoader, affinity_graph, drug_pos,
+def test(model, predictor, device, loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, affinity_graph, drug_pos,
          target_pos):
     model.eval()
     predictor.eval()
@@ -72,10 +72,12 @@ def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs
     total_labels = torch.Tensor()
     print('Make prediction for {} samples...'.format(len(loader.dataset)))
     drug_graph_batchs = list(map(lambda graph: graph.to(device), drug_graphs_DataLoader))  # drug graphs
+    drug_graph_neighbor_batchs = list(map(lambda graph: graph.to(device), drug_graphs_neighbor_DataLoader))
+
     target_graph_batchs = list(map(lambda graph: graph.to(device), target_graphs_DataLoader))  # target graphs
     with torch.no_grad():
         for data in loader:
-            _, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs, target_graph_batchs, drug_pos, target_pos)
+            _, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs, drug_graph_neighbor_batchs, target_graph_batchs, drug_pos, target_pos)
             output, _ = predictor(data.to(device), drug_embedding, target_embedding)
             total_preds = torch.cat((total_preds, output.cpu()), 0)
             total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
@@ -153,7 +155,7 @@ def train_predict():
     for epoch in range(args.epochs):
         train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
               args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
-        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
+        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
         if epoch % 1000 == 0:
             r = model_evaluate(G, P, full = True)
