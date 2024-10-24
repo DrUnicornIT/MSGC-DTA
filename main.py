@@ -191,7 +191,7 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--workspace', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/')
     parser.add_argument('--dataset', type=str, default='davis')
-    parser.add_argument('--epochs', type=int, default=2)    # --kiba 3000
+    parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--edge_dropout_rate', type=float, default=0.2)   # --kiba 0.
