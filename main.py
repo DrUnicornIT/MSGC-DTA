@@ -169,10 +169,7 @@ def train_predict():
               args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
         G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader,
                     affinity_graph, drug_pos, target_pos)
-        if epoch % 1000 == 0:
-            r = model_evaluate(G, P, full = True)
-        else: 
-            r = model_evaluate(G, P, full = False)
+        r = model_evaluate(G, P, full = False)
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
 
