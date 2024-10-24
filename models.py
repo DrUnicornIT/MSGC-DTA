@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.functional import normalize
 
-from torch_geometric.nn import DenseGCNConv, GCNConv, global_mean_pool as gep
+from torch_geometric.nn import DenseGCNConv, GCNConv, GATConv, global_mean_pool as gep
 from torch_geometric.utils import dropout_adj
 
 class Feature_Fusion(nn.Module):
@@ -63,6 +63,33 @@ class GCNBlock_MIX(nn.Module):
 
         return embeddings
 
+class GATBlock(nn.Module):
+    def __init__(self, gcn_layers_dim, hidden_dim=1024, output_dim=128, dropout_rate=0.2):
+        super(GATBlock, self).__init__()
+
+        self.conv_layers = nn.ModuleList([GATConv(gcn_layers_dim[i], gcn_layers_dim[i + 1]) for i in range(3)])
+
+        self.mol_fcs = nn.ModuleList(
+            [nn.Linear(gcn_layers_dim[3], hidden_dim), nn.Linear(hidden_dim, output_dim)])
+
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, x, edge_index, edge_weight, batch):
+        output = x
+
+        output = self.conv_layers[0](output, edge_index)
+
+        for conv in self.conv_layers[1:]:
+            output = self.relu(conv(output, edge_index))
+
+        output = gep(output, batch)
+        for fc in self.motif_fcs:
+            output = fc(self.relu(output))
+            output = self.dropout(output)
+
+        return output
+
 class GCNBlock(nn.Module):
     def __init__(self, gcn_layers_dim, dropout_rate=0., relu_layers_index=[], dropout_layers_index=[]):
         super(GCNBlock, self).__init__()
@@ -90,6 +117,7 @@ class GCNBlock(nn.Module):
             embeddings.append(gep(output, batch))
 
         return embeddings
+    
 
 class GCNModel_MIX(nn.Module):
     def __init__(self, layers_dim):
@@ -107,6 +135,19 @@ class GCNModel_MIX(nn.Module):
         embeddings = []
         for i in range(self.num_layers):
             embeddings.append(torch.cat(list(map(lambda embedding_batch: embedding_batch[i], embedding_batchs)), 0))
+
+        return embeddings
+
+class GATModel(nn.Module):
+    def __init__(self, layers_dim):
+        super(GATModel, self).__init__()
+
+        self.num_layers = len(layers_dim) - 1
+        self.graph_conv = GATBlock(layers_dim)
+
+    def forward(self, graph_batchs):
+        embeddings = list(
+                map(lambda graph: self.graph_conv(graph.x, graph.edge_index, None, graph.batch), graph_batchs))
 
         return embeddings
 
@@ -270,8 +311,9 @@ class CSCoDTA(nn.Module):
         self.output_dim = embedding_dim * 2
 
         self.affinity_graph_conv = DenseGCNModel(ns_dims, dropout_rate)
-        self.drug_graph_conv = GCNModel_MIX(d_ms_dims)
-        self.target_graph_conv = GCNModel_MIX(t_ms_dims)
+        self.drug_graph_conv = GATModel(d_ms_dims)
+        self.target_graph_conv = GATModel(t_ms_dims)
+
         self.drug_embeddings = EnsembleEmbedding(d_embeddings, sizes = (100, 300, 512), target_size = 128)
         self.target_embeddings = EnsembleEmbedding(t_embeddings, sizes = (100, 768, 1280), target_size = 128)
         
@@ -284,8 +326,10 @@ class CSCoDTA(nn.Module):
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
         
         #______________
-        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1] ## TODO
-        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1] ## TODO
+        # drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1] ## TODO
+        # target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1] ## TODO
+        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)
+        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)
         #_________________
         drug_graph_embedding_static = self.drug_embeddings()
         target_graph_embedding_static = self.target_embeddings()
