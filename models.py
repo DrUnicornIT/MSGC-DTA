@@ -328,7 +328,10 @@ class CSCoDTA(nn.Module):
         #______________
         # drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1] ## TODO
         # target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1] ## TODO
-        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)
+        # print(drug_graph_embedding_dynamic)
+        # print(len(drug_graph_embedding_dynamic))
+
+        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)[-1]
         print(drug_graph_embedding_dynamic)
         print(len(drug_graph_embedding_dynamic))
         target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)
