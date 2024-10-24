@@ -191,10 +191,10 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--lr', type=float, default=0.0002)
-    parser.add_argument('--edge_dropout_rate', type=float, default=0.2)   # --kiba 0.
+    parser.add_argument('--edge_dropout_rate', type=float, default=0)   # --kiba 0.
     parser.add_argument('--tau', type=float, default=0.8)
     parser.add_argument('--lam', type=float, default=0.5)
-    parser.add_argument('--num_pos', type=int, default=3)    # --kiba 10
+    parser.add_argument('--num_pos', type=int, default=10)    # --kiba 10
     parser.add_argument('--pos_threshold', type=float, default=8.0)
 
     args, _ = parser.parse_known_args()
