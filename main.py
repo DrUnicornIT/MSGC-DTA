@@ -104,7 +104,7 @@ def train_predict():
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
     #________________________________________________
     drug_graphs_dict, drug_graphs_neighbor_dict = get_drug_molecule_graph(
-        json.load(open(f'/kaggle/input/msgc-dta/MSGC-DTA/data/{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
+        json.load(open(f'/root/MSGC-DTA/data/{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
     
     drug_graphs_Data = GraphDataset(graphs_dict=drug_graphs_dict, dttype="drug")
     drug_graphs_DataLoader = torch.utils.data.DataLoader(drug_graphs_Data, shuffle=False, collate_fn=collate,
@@ -115,7 +115,7 @@ def train_predict():
                                                          batch_size=affinity_graph.num_drug)
     #________________________________________________
     target_graphs_dict, target_graphs_neighbor_dict = get_target_molecule_graph(
-        json.load(open(f'/kaggle/input/msgc-dta/MSGC-DTA/data/{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
+        json.load(open(f'/root/MSGC-DTA/data/{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
     target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
     target_graphs_DataLoader = torch.utils.data.DataLoader(target_graphs_Data, shuffle=False, collate_fn=collate,
                                                            batch_size=affinity_graph.num_target)
@@ -125,13 +125,13 @@ def train_predict():
                                                            batch_size=affinity_graph.num_target)
     #________________________________________________
     
-    d_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_1d_embeds = np.load('/root/MSGC-DTA/data/results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
+    d_2d_embeds = np.load('/root/MSGC-DTA/data/results/unique_drug_GIN_EMB_DAVIS.npy')
+    d_3d_embeds = np.load('/root/MSGC-DTA/data/results/unique_drug_E3nn_EMB_DAVIS.npy')
     
-    t_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_1d_embeds = np.load('/root/MSGC-DTA/data/results/unique_protein_ProVec_EMB_DAVIS.npy') 
+    t_2d_embeds = np.load('/root/MSGC-DTA/data/results/unique_protein_BERT_EMB_DAVIS.npy')
+    t_3d_embeds = np.load('/root/MSGC-DTA/data/results/unique_protein_ESM_EMB_DAVIS.npy')
     
     print(d_1d_embeds.shape)
     print(d_2d_embeds.shape)
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=2024, help='Random Seed')
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
-    parser.add_argument('--workspace', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/')
+    parser.add_argument('--workspace', type=str, default='/root/MSGC-DTA/')
     parser.add_argument('--dataset', type=str, default='davis')
     parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
