@@ -125,13 +125,13 @@ def train_predict():
                                                            batch_size=affinity_graph.num_target)
     #________________________________________________
     
-    d_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_Mol2Vec_EMB_KIBA.npy')
+    d_2d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_GIN_EMB_KIBA.npy')
+    d_3d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_drug_E3nn_EMB_KIBA.npy')
     
-    t_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_1d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_ProVec_EMB_KIBA.npy') 
+    t_2d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_BERT_EMB_KIBA.npy')
+    t_3d_embeds = np.load('/kaggle/input/msgc-dta/MSGC-DTA/data/results/unique_protein_ESM_EMB_KIBA.npy')
     
     print(d_1d_embeds.shape)
     print(d_2d_embeds.shape)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--workspace', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/')
-    parser.add_argument('--dataset', type=str, default='davis')
+    parser.add_argument('--dataset', type=str, default='kiba')
     parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--lr', type=float, default=0.0002)
