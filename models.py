@@ -84,7 +84,7 @@ class GATBlock(nn.Module):
             output = self.relu(conv(output, edge_index))
 
         output = gep(output, batch)
-        for fc in self.motif_fcs:
+        for fc in self.mol_fcs:
             output = fc(self.relu(output))
             output = self.dropout(output)
 
