@@ -223,9 +223,9 @@ def get_drug_molecule_graph(ligands):
 
     for d in ligands.keys():
         lg = Chem.MolToSmiles(Chem.MolFromSmiles(ligands[d]), isomericSmiles=True)
-        graph = smile_to_graph(lg)
-        smile_graph[d] = graph[:3]
-        smile_graph_neighbor[d] = graph[:2] + graph[3]
+        c_size, features, edge_index, edge_index_neighbor = smile_to_graph(lg)
+        smile_graph[d] = (c_size, features, edge_index)
+        smile_graph_neighbor[d] = (c_size, features, edge_index_neighbor)
 
     return smile_graph, smile_graph_neighbor
 
@@ -266,7 +266,7 @@ def smile_to_graph(smile):
     for i, j in zip(index_row, index_col):
         edge_index_neighbor.append([i, j])
                 
-    return [c_size, features, edge_index, edge_index_neighbor]
+    return c_size, features, edge_index, edge_index_neighbor
 
 
 def get_target_molecule_graph(proteins, dataset):
