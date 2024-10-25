@@ -29,8 +29,8 @@ class GATBlock_MIX(nn.Module):
         self.conv_neighbor_layers = nn.ModuleList([GATConv(gcn_layers_dim[i], gcn_layers_dim[i + 1]) for i in range(3)])
         self.fusion_layers = nn.ModuleList([nn.Linear(gcn_layers_dim[i+1] * 2, gcn_layers_dim[i+1]) for i in range(3)])
 
-        self.mol_fcs = nn.ModuleList(
-            [nn.Linear(gcn_layers_dim[3], hidden_dim), nn.Linear(hidden_dim, output_dim)])
+        # self.mol_fcs = nn.ModuleList(
+        #     [nn.Linear(gcn_layers_dim[3], hidden_dim), nn.Linear(hidden_dim, output_dim)])
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout_rate)
@@ -50,9 +50,9 @@ class GATBlock_MIX(nn.Module):
             output = self.fusion_layers[i](output)
                 
         output = gep(output, batch)
-        for fc in self.mol_fcs:
-            output = fc(self.relu(output))
-            output = self.dropout(output)
+        # for fc in self.mol_fcs:
+        #     output = fc(self.relu(output))
+        #     output = self.dropout(output)
 
         return output
     
