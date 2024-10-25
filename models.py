@@ -63,6 +63,43 @@ class GCNBlock_MIX(nn.Module):
 
         return embeddings
 
+class GATBlock_MIX(nn.Module):
+    def __init__(self, gcn_layers_dim, hidden_dim=1024, output_dim=128, dropout_rate=0.2):
+        super(GATBlock_MIX, self).__init__()
+
+        self.conv_layers = nn.ModuleList([GATConv(gcn_layers_dim[i], gcn_layers_dim[i + 1]) for i in range(3)])
+        self.conv_neighbor_layers = nn.ModuleList([GATConv(gcn_layers_dim[i], gcn_layers_dim[i + 1]) for i in range(3)])
+
+        self.mol_fcs = nn.ModuleList(
+            [nn.Linear(gcn_layers_dim[3], hidden_dim), nn.Linear(hidden_dim, output_dim)])
+
+        self.relu = nn.ReLU()
+        self.relu_neighbor = nn.ReLU()
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, x, edge_index, edge_weight, batch, edge_index_neighbor, edge_weight_neighbor, batch_neighbor):
+        output = x
+
+        output_origin = self.conv_layers[0](output, edge_index)
+        output_neighbor = self.conv_neighbor_layers[0](output, edge_index_neighbor)
+        output = torch.cat((output_origin, output_neighbor), dim = -1)
+
+        for conv in self.conv_layers[1:]:
+            output_origin = self.conv_layers[0](output, edge_index)
+            output_neighbor = self.conv_neighbor_layers[0](output, edge_index_neighbor)
+
+            output_origin = self.relu(conv(output_origin, edge_index))
+            output_neighbor = self.relu_neighbor(conv(output_neighbor, edge_index_neighbor))
+
+            output = torch.cat((output_origin, output_neighbor), dim = -1)
+
+        output = gep(output, batch)
+        for fc in self.mol_fcs:
+            output = fc(self.relu(output))
+            output = self.dropout(output)
+
+        return output
+    
 class GATBlock(nn.Module):
     def __init__(self, gcn_layers_dim, hidden_dim=1024, output_dim=128, dropout_rate=0.2):
         super(GATBlock, self).__init__()
@@ -135,6 +172,20 @@ class GCNModel_MIX(nn.Module):
         embeddings = []
         for i in range(self.num_layers):
             embeddings.append(torch.cat(list(map(lambda embedding_batch: embedding_batch[i], embedding_batchs)), 0))
+
+        return embeddings
+
+class GATModel_MIX(nn.Module):
+    def __init__(self, layers_dim):
+        super(GATModel_MIX, self).__init__()
+
+        self.num_layers = len(layers_dim) - 1
+        self.graph_conv = GATBlock_MIX(layers_dim)
+
+    def forward(self, graph_batchs, graph_neighbor_batchs):
+        embeddings = list(
+                map(lambda pair: self.graph_conv(pair[0].x, pair[0].edge_index, None, pair[0].batch, pair[1].edge_index, None, pair[1].batch),
+                     zip(graph_batchs, graph_neighbor_batchs)))
 
         return embeddings
 
@@ -312,8 +363,8 @@ class CSCoDTA(nn.Module):
 
         self.affinity_graph_conv = DenseGCNModel(ns_dims, dropout_rate)
         
-        self.drug_graph_conv = GATModel(d_ms_dims)
-        self.target_graph_conv = GATModel(t_ms_dims)
+        self.drug_graph_conv = GATModel_MIX(d_ms_dims)
+        self.target_graph_conv = GATModel_MIX(t_ms_dims)
 
         self.drug_embeddings = EnsembleEmbedding(d_embeddings, sizes = (100, 300, 512), target_size = 128)
         self.target_embeddings = EnsembleEmbedding(t_embeddings, sizes = (100, 768, 1280), target_size = 128)
@@ -327,8 +378,8 @@ class CSCoDTA(nn.Module):
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
         
         #______________
-        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)[-1]
-        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)[-1]
+        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1]
+        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1]
         #_________________
         drug_graph_embedding_static = self.drug_embeddings()
         target_graph_embedding_static = self.target_embeddings()
