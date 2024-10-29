@@ -406,9 +406,12 @@ class CSCoDTA(nn.Module):
         num_d = affinity_graph.num_drug
 
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)
+        print(num_d)
+        print(affinity_graph_embedding.shape)
+        
         #______________
-        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)[-1]
-        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)[-1]
+        drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs, drug_graph_neighbor_batchs)[-1]
+        target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs, target_graph_neighbor_batchs)[-1]
         #_________________
         drug_graph_embedding_static = self.drug_embeddings()
         target_graph_embedding_static = self.target_embeddings()
