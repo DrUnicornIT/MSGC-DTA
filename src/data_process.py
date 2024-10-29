@@ -271,7 +271,7 @@ def smile_to_graph(smile):
 
 def get_target_molecule_graph(proteins, dataset):
     msa_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/aln'
-    contac_path = '/kaggle/input/msgc-dta/MSGC-DTA/data' + dataset + '/pconsc4'    
+    contac_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/pconsc4'    
 
     target_graph = OrderedDict()
     target_graph_neighbor = OrderedDict()
