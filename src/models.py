@@ -251,7 +251,7 @@ class DenseGCNBlock(nn.Module):
 class DenseRegressionModel(nn.Module):
     def __init__(self, layers_dim, edge_dropout_rate=0.):
         super(DenseRegressionModel, self).__init__()
-        self.gcn = GCNConv(layers_dim[0], layers_dim[1])
+        self.gcn = DenseGCNConv(layers_dim[0], layers_dim[1])
         
         self.fc1 = nn.Linear(layers_dim[1], 256)
         self.fc2 = nn.Linear(256, 128)
@@ -259,8 +259,14 @@ class DenseRegressionModel(nn.Module):
     
     def forward(self, graph):
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
-        
-        x = self.gcn(xs)
+        indexs = torch.where(adj != 0)
+        edge_indexs = torch.cat((torch.unsqueeze(indexs[0], 0), torch.unsqueeze(indexs[1], 0)), 0)
+        edge_indexs_dropout, edge_weights_dropout = dropout_adj(edge_index=edge_indexs, edge_attr=adj[indexs],
+                                                                p=self.edge_dropout_rate, force_undirected=True,
+                                                                num_nodes=num_d + num_t, training=self.training)
+        adj_dropout = torch.zeros_like(adj)
+        adj_dropout[edge_indexs_dropout[0], edge_indexs_dropout[1]] = edge_weights_dropout
+        x = self.gcn(xs, adj_dropout)
 
         x = self.relu(self.fc1(x))
         x = self.relu(self.fc2(x))
