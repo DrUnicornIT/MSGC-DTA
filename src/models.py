@@ -402,7 +402,7 @@ class CSCoDTA(nn.Module):
         self.drug_contrast = Contrast(ns_dims[-1], embedding_dim, tau, lam)
         self.target_contrast = Contrast(ns_dims[-1], embedding_dim, tau, lam)
 
-    def forward(self, affinity_graph, drug_graph_batchs, drug_graph_neighbor_batchs, target_graph_batchs, target_graph_neighbor_batchs, drug_pos, target_pos):
+    def forward(self, affinity_graph, drug_graph_batchs, target_graph_batchs, drug_pos, target_pos):
         num_d = affinity_graph.num_drug
 
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
