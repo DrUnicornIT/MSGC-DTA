@@ -257,6 +257,8 @@ class DenseRegressionModel(nn.Module):
         self.fc1 = nn.Linear(layers_dim[1], 256)
         self.fc2 = nn.Linear(256, 128)
         self.fc_out = nn.Linear(128, 256)
+        self.relu = nn.ReLU()
+
     
     def forward(self, graph):
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
