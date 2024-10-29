@@ -250,8 +250,9 @@ class DenseGCNBlock(nn.Module):
 # Regression
 class DenseRegressionModel(nn.Module):
     def __init__(self, layers_dim, edge_dropout_rate=0.):
+        self.edge_dropout_rate = edge_dropout_rate
         super(DenseRegressionModel, self).__init__()
-        self.gcn = DenseGCNConv(layers_dim[0], layers_dim[1])
+        self.gcn = DenseGCNConv(layers_dim[0], layers_dim[1], edge_dropout_rate)
         
         self.fc1 = nn.Linear(layers_dim[1], 256)
         self.fc2 = nn.Linear(256, 128)
