@@ -198,7 +198,7 @@ if __name__ == '__main__':
     parser.add_argument('--pos_threshold', type=float, default=8.0)
 
     args, _ = parser.parse_known_args()
-    wandb.login(key="b67abb17df1ee7142cd9e8950d8b6d9aca0585cd")
+    # wandb.login(key="b67abb17df1ee7142cd9e8950d8b6d9aca0585cd")
     # Setup Wandb project
     wandb.init(
         project="MSGC-DTA",
