@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: cleaning-data-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2024-10-25T20:32:26.879528',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Cleaning data", "inputs":
+      [{"name": "image"}], "name": "Cleaning data"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
+spec:
+  entrypoint: cleaning-data
+  templates:
+  - name: clean-data
+    container:
+      command: [python3, main.py, ' > out.txt']
+      image: '{{inputs.parameters.image}}'
+      imagePullPolicy: Always
+      resources:
+        limits: {cpu: 12000m, memory: 16Gi, nvidia.com/gpu: 1}
+        requests: {cpu: 12000m, memory: 16Gi}
+    inputs:
+      parameters:
+      - {name: image}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+  - name: cleaning-data
+    inputs:
+      parameters:
+      - {name: image}
+    dag:
+      tasks:
+      - name: clean-data
+        template: clean-data
+        arguments:
+          parameters:
+          - {name: image, value: '{{inputs.parameters.image}}'}
+  arguments:
+    parameters:
+    - {name: image}
+  serviceAccountName: pipeline-runner
+  imagePullSecrets:
+  - {name: dockerhub-private}

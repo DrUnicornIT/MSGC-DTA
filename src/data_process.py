@@ -70,7 +70,7 @@ res_hydrophobic_ph7_table = dic_normalize(res_hydrophobic_ph7_table)
 
 
 def load_data(dataset):
-    affinity = pickle.load(open('/root/MSGC-DTA/data/' + dataset + '/affinities', 'rb'), encoding='latin1')
+    affinity = pickle.load(open('/root/MSGC-DTA/' + dataset + '/affinities', 'rb'), encoding='latin1')
     if dataset == 'davis':
         affinity = -np.log10(affinity / 1e9)
 
@@ -78,7 +78,7 @@ def load_data(dataset):
 
 
 def process_data(affinity_mat, dataset, num_pos, pos_threshold):
-    dataset_path = '/root/MSGC-DTA/data/' + dataset + '/'
+    dataset_path = '/root/MSGC-DTA/' + dataset + '/'
 
     train_file = json.load(open(dataset_path + 'S1_train_set.txt'))
     train_index = []
@@ -104,7 +104,7 @@ def process_data(affinity_mat, dataset, num_pos, pos_threshold):
 
 
 def get_affinity_graph(dataset, adj, num_pos, pos_threshold):
-    dataset_path = '/root/MSGC-DTA/data/' + dataset + '/'
+    dataset_path = '/root/MSGC-DTA/' + dataset + '/'
     num_drug, num_target = adj.shape[0], adj.shape[1]
 
     dt_ = adj.copy()
@@ -270,8 +270,8 @@ def smile_to_graph(smile):
 
 
 def get_target_molecule_graph(proteins, dataset):
-    msa_path = '/root/MSGC-DTA/data/' + dataset + '/aln'
-    contac_path = '/root/MSGC-DTA/data/' + dataset + '/pconsc4'    
+    msa_path = '/root/MSGC-DTA/' + dataset + '/aln'
+    contac_path = '/root/MSGC-DTA/' + dataset + '/pconsc4'    
 
     target_graph = OrderedDict()
     target_graph_neighbor = OrderedDict()
