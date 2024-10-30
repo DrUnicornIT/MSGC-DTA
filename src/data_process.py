@@ -70,7 +70,7 @@ res_hydrophobic_ph7_table = dic_normalize(res_hydrophobic_ph7_table)
 
 
 def load_data(data_path, dataset):
-    affinity = pickle.load(open(data_path + + dataset + '/affinities', 'rb'), encoding='latin1')
+    affinity = pickle.load(open(data_path + dataset + '/affinities', 'rb'), encoding='latin1')
     if dataset == 'davis':
         affinity = -np.log10(affinity / 1e9)
 
