@@ -165,16 +165,16 @@ def train_predict():
                                                     max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
     print("Start training...")
     for epoch in range(args.epochs):
-        train(model, predictor, device, train_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader, args.lr, epoch+1,
+        train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
               args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
-        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader,
+        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
         r = model_evaluate(G, P, full = False)
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
 
     print('\npredicting for test data')
-    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, drug_graphs_neighbor_DataLoader, target_graphs_DataLoader, target_graphs_neighbor_DataLoader,
+    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                 affinity_graph, drug_pos, target_pos)
     result = model_evaluate(G, P, full = True)
     print("result:", result)
