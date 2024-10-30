@@ -369,19 +369,19 @@ class Contrast(nn.Module):
 class EnsembleEmbedding(nn.Module):
     def __init__(self, embeddings, sizes = [100, 300], target_size = 128):
         super(EnsembleEmbedding, self).__init__()
-        num_dims = len(embeddings)
         self.params = nn.ParameterList([nn.Parameter(torch.from_numpy(embedding).float(), requires_grad = True) for embedding in embeddings])
-        # self.linears = nn.ModuleList([nn.Linear(sizes[i], mid_size) for i in range(num_dims)])
-        self.linear = nn.Linear(sum(sizes), target_size)
-        self.relu = nn.ReLU()
+        
+        layers_dim = [sum(sizes), 512, 256, target_size]
+        self.linears = nn.ModuleList([nn.Sequential(
+            nn.Linear(layers_dim[i], layers_dim[i+1]),
+            nn.ReLU(),
+            nn.Dropout(0.2)
+        )] for i in range(3))
+
     def forward(self):
-        # embeds = []
-        # for i, param in enumerate(self.params):
-        #     embed_prj = self.relu(self.linears[i](normalize(param)))
-        #     embeds.append(embed_prj)
-        # embeds = torch.cat(embeds, dim = -1)
         embeds = torch.cat([normalize(param.data) for param in self.params], dim=-1)
-        embeds = self.linear(embeds)
+        for linear in self.linears:
+            embeds = linear(embeds)
         return embeds
         
 
@@ -421,16 +421,11 @@ class CSCoDTA(nn.Module):
         drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
         target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
         
-        mv_drug_graph_embedding = self.linear(drug_graph_embedding)
-        mv_target_graph_embedding = self.linear(target_graph_embedding)
+        dru_loss, drug_embedding = self.drug_contrast(affinity_graph_embedding[:num_d], drug_graph_embedding, drug_pos)
+        tar_loss, target_embedding = self.target_contrast(affinity_graph_embedding[num_d:], target_graph_embedding,
+                                                          target_pos)
 
-        nv_drug_graph_embedding = self.linear(affinity_graph_embedding[:num_d])
-        nv_target_graph_embedding = self.linear(affinity_graph_embedding[num_d:])
-
-        drug_graph_embedding = torch.cat([mv_drug_graph_embedding,nv_drug_graph_embedding], dim=-1)
-        target_graph_embedding = torch.cat([mv_target_graph_embedding,nv_target_graph_embedding], dim=-1)
-
-        return drug_graph_embedding, target_graph_embedding
+        return dru_loss + tar_loss, drug_embedding, target_embedding
 
 class PredictModule(nn.Module):
     def __init__(self, embedding_dim=128, output_dim=1):
