@@ -44,10 +44,12 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
     
     for batch_idx, data in enumerate(train_loader):
         optimizer.zero_grad()
-        ssl_loss, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs,
-                                                                  target_graph_batchs, drug_pos, target_pos)
+        # ssl_loss, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs,
+        #                                                           target_graph_batchs, drug_pos, target_pos)
+        drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs,
+                                                            target_graph_batchs, drug_pos, target_pos)
         output, _ = predictor(data.to(device), drug_embedding, target_embedding)
-        loss = loss_fn(output, data.y.view(-1, 1).float().to(device)) + ssl_loss
+        loss = loss_fn(output, data.y.view(-1, 1).float().to(device))
         loss.backward()
         optimizer.step()
         scheduler.step()
