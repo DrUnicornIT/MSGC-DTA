@@ -49,12 +49,12 @@ def train_predict():
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
     drug_graphs_dict = get_drug_molecule_graph(
-        json.load(open(f'data/{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
+        json.load(open(f'/root/MSGC-DTA/data/{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
     drug_graphs_Data = GraphDataset(graphs_dict=drug_graphs_dict, dttype="drug")
     drug_graphs_DataLoader = torch.utils.data.DataLoader(drug_graphs_Data, shuffle=False, collate_fn=collate,
                                                          batch_size=affinity_graph.num_drug)
     target_graphs_dict = get_target_molecule_graph(
-        json.load(open(f'data/{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
+        json.load(open(f'/root/MSGC-DTA/data/{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
     target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
     target_graphs_DataLoader = torch.utils.data.DataLoader(target_graphs_Data, shuffle=False, collate_fn=collate,
                                                            batch_size=affinity_graph.num_target)
