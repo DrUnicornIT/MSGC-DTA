@@ -399,6 +399,8 @@ class CSCoDTA(nn.Module):
         self.drug_embeddings = EnsembleEmbedding(d_embeddings, sizes = (100, 300, 512), target_size = 128)
         self.target_embeddings = EnsembleEmbedding(t_embeddings, sizes = (100, 768, 1280), target_size = 128)
         
+        self.linear = nn.Linear(ns_dims[-1], embedding_dim)
+
         self.drug_contrast = Contrast(ns_dims[-1], embedding_dim, tau, lam)
         self.target_contrast = Contrast(ns_dims[-1], embedding_dim, tau, lam)
 
@@ -417,12 +419,19 @@ class CSCoDTA(nn.Module):
         target_graph_embedding_static = self.target_embeddings()
 
         drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
-        target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static, affinity_graph_embedding[num_d:]], dim=-1)
+        target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
         
-        print(drug_graph_embedding.shape)
-        print(affinity_graph_embedding[:num_d].shape)
-        drug_graph_embedding = torch.cat([drug_graph_embedding,affinity_graph_embedding[:num_d]], dim=-1)
-        target_graph_embedding = torch.cat([target_graph_embedding,affinity_graph_embedding[num_d:]], dim=-1)
+        mv_drug_graph_embedding = self.linear(drug_graph_embedding)
+        mv_target_graph_embedding = self.linear(target_graph_embedding)
+
+        nv_drug_graph_embedding = self.linear(affinity_graph_embedding[:num_d])
+        nv_target_graph_embedding = self.linear(affinity_graph_embedding[num_d:])
+
+        drug_graph_embedding = torch.cat([mv_drug_graph_embedding,nv_drug_graph_embedding], dim=-1)
+        target_graph_embedding = torch.cat([mv_target_graph_embedding,nv_target_graph_embedding], dim=-1)
+
+
+
         print(drug_graph_embedding.shape)
         print(target_graph_embedding.shape)
 
