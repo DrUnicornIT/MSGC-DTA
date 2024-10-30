@@ -96,7 +96,7 @@ def train_predict():
     print(affinity_mat)
     
     # Process build train data and test data
-    train_data, test_data, affinity_graph, drug_pos, target_pos = process_data(affinity_mat, args.dataset, args.num_pos, args.pos_threshold)
+    train_data, test_data, affinity_graph, drug_pos, target_pos = process_data(args.data_path, affinity_mat, args.dataset, args.num_pos, args.pos_threshold)
     
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
