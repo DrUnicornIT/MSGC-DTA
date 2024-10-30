@@ -391,7 +391,7 @@ class CSCoDTA(nn.Module):
 
         self.output_dim = embedding_dim * 2
 
-        self.affinity_graph_conv = DenseRegressionModel(ns_dims, dropout_rate)
+        self.affinity_graph_conv = DenseGCNModel(ns_dims, dropout_rate)
         
         self.drug_graph_conv = GCNModel(d_ms_dims)
         self.target_graph_conv = GCNModel(t_ms_dims)
@@ -418,6 +418,9 @@ class CSCoDTA(nn.Module):
 
         drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
         target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
+
+        print(drug_graph_embedding.shape)
+        print(target_graph_embedding.shape)
 
         dru_loss, drug_embedding = self.drug_contrast(affinity_graph_embedding[:num_d], drug_graph_embedding, drug_pos)
         tar_loss, target_embedding = self.target_contrast(affinity_graph_embedding[num_d:], target_graph_embedding,
