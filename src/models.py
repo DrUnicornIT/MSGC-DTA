@@ -430,26 +430,13 @@ class CSCoDTA(nn.Module):
         drug_graph_embedding = torch.cat([mv_drug_graph_embedding,nv_drug_graph_embedding], dim=-1)
         target_graph_embedding = torch.cat([mv_target_graph_embedding,nv_target_graph_embedding], dim=-1)
 
-
-
-        print(drug_graph_embedding.shape)
-        print(target_graph_embedding.shape)
-
-        # dru_loss, drug_embedding = self.drug_contrast(affinity_graph_embedding[:num_d], drug_graph_embedding, drug_pos)
-        # tar_loss, target_embedding = self.target_contrast(affinity_graph_embedding[num_d:], target_graph_embedding,
-        #                                                   target_pos)
-        
-        # print(drug_embedding.shape)
-        # print(target_embedding.shape)
-
-        # return dru_loss + tar_loss, drug_embedding, target_embedding
         return drug_graph_embedding, target_graph_embedding
 
 
 class PredictModule(nn.Module):
     def __init__(self, embedding_dim=128, output_dim=1):
         super(PredictModule, self).__init__()
-        self.dtf = Feature_Fusion(channels= 4 * embedding_dim)
+        self.dtf = Feature_Fusion(channels= 2 * embedding_dim)
 
         # self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
         # mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
