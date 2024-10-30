@@ -184,7 +184,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=2024, help='Random Seed')
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
-    parser.add_argument('--datapath', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/data/')
+    parser.add_argument('--data_path', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/data/')
     parser.add_argument('--dataset', type=str, default='davis')
     parser.add_argument('--epochs', type=int, default=2500)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
