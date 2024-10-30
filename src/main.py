@@ -81,7 +81,7 @@ def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs
     
     with torch.no_grad():
         for data in loader:
-            _, drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs, target_graph_batchs, drug_pos, target_pos)
+            drug_embedding, target_embedding = model(affinity_graph.to(device), drug_graph_batchs, target_graph_batchs, drug_pos, target_pos)
             output, _ = predictor(data.to(device), drug_embedding, target_embedding)
             total_preds = torch.cat((total_preds, output.cpu()), 0)
             total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
