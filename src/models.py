@@ -440,7 +440,7 @@ class CSCoDTA(nn.Module):
 class PredictModule(nn.Module):
     def __init__(self, embedding_dim=128, output_dim=1):
         super(PredictModule, self).__init__()
-        self.dtf = Feature_Fusion(channels= 2 * embedding_dim)
+        self.dtf = Feature_Fusion(channels= 4 * embedding_dim)
 
         # self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
         # mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
