@@ -372,11 +372,11 @@ class EnsembleEmbedding(nn.Module):
         self.params = nn.ParameterList([nn.Parameter(torch.from_numpy(embedding).float(), requires_grad = True) for embedding in embeddings])
         
         layers_dim = [sum(sizes), 512, 256, target_size]
-        self.linears = nn.ModuleList([nn.Sequential(
+        self.linears = [nn.Sequential(
             nn.Linear(layers_dim[i], layers_dim[i+1]),
             nn.ReLU(),
             nn.Dropout(0.2)
-        )] for i in range(3))
+        )for i in range(3)] 
 
     def forward(self):
         embeds = torch.cat([normalize(param.data) for param in self.params], dim=-1)
