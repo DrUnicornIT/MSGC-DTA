@@ -425,6 +425,9 @@ class CSCoDTA(nn.Module):
         dru_loss, drug_embedding = self.drug_contrast(affinity_graph_embedding[:num_d], drug_graph_embedding, drug_pos)
         tar_loss, target_embedding = self.target_contrast(affinity_graph_embedding[num_d:], target_graph_embedding,
                                                           target_pos)
+        
+        print(drug_embedding.shape)
+        print(target_embedding.shape)
 
         return dru_loss + tar_loss, drug_embedding, target_embedding
         # return drug_graph_embedding, target_graph_embedding
