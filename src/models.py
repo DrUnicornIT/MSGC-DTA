@@ -416,8 +416,8 @@ class CSCoDTA(nn.Module):
         drug_graph_embedding_static = self.drug_embeddings()
         target_graph_embedding_static = self.target_embeddings()
 
-        drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
-        target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
+        drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static, affinity_graph_embedding[:num_d]], dim=-1)
+        target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static, affinity_graph_embedding[num_d:]], dim=-1)
 
         # print(drug_graph_embedding.shape)
         # print(target_graph_embedding.shape)
