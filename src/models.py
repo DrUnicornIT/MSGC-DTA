@@ -415,14 +415,14 @@ class CSCoDTA(nn.Module):
         drug_graph_embedding_dynamic = self.drug_graph_conv(drug_graph_batchs)[-1]
         target_graph_embedding_dynamic = self.target_graph_conv(target_graph_batchs)[-1]
         #_________________
-        drug_graph_embedding_static = self.drug_embeddings()
-        target_graph_embedding_static = self.target_embeddings()
+        # drug_graph_embedding_static = self.drug_embeddings()
+        # target_graph_embedding_static = self.target_embeddings()
 
-        drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
-        target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
+        # drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
+        # target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
         
-        mv_drug_graph_embedding = self.linear(drug_graph_embedding)
-        mv_target_graph_embedding = self.linear(target_graph_embedding)
+        mv_drug_graph_embedding = self.linear(drug_graph_embedding_dynamic)
+        mv_target_graph_embedding = self.linear(target_graph_embedding_dynamic)
 
         nv_drug_graph_embedding = self.linear(affinity_graph_embedding[:num_d])
         nv_target_graph_embedding = self.linear(affinity_graph_embedding[num_d:])
@@ -431,7 +431,6 @@ class CSCoDTA(nn.Module):
         target_graph_embedding = torch.cat([mv_target_graph_embedding,nv_target_graph_embedding], dim=-1)
 
         return drug_graph_embedding, target_graph_embedding
-
 
 class PredictModule(nn.Module):
     def __init__(self, embedding_dim=128, output_dim=1):

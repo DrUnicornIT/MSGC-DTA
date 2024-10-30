@@ -69,16 +69,16 @@ res_hydrophobic_ph2_table = dic_normalize(res_hydrophobic_ph2_table)
 res_hydrophobic_ph7_table = dic_normalize(res_hydrophobic_ph7_table)
 
 
-def load_data(dataset):
-    affinity = pickle.load(open('/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/affinities', 'rb'), encoding='latin1')
+def load_data(data_path, dataset):
+    affinity = pickle.load(open(data_path + + dataset + '/affinities', 'rb'), encoding='latin1')
     if dataset == 'davis':
         affinity = -np.log10(affinity / 1e9)
 
     return affinity
 
 
-def process_data(affinity_mat, dataset, num_pos, pos_threshold):
-    dataset_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/'
+def process_data(data_path, affinity_mat, dataset, num_pos, pos_threshold):
+    dataset_path = data_path + dataset + '/'
 
     train_file = json.load(open(dataset_path + 'S1_train_set.txt'))
     train_index = []
@@ -98,13 +98,13 @@ def process_data(affinity_mat, dataset, num_pos, pos_threshold):
 
     train_affinity_mat = np.zeros_like(affinity_mat)
     train_affinity_mat[train_rows, train_cols] = train_Y
-    affinity_graph, drug_pos, target_pos = get_affinity_graph(dataset, train_affinity_mat, num_pos, pos_threshold)
+    affinity_graph, drug_pos, target_pos = get_affinity_graph(data_path, dataset, train_affinity_mat, num_pos, pos_threshold)
 
     return train_dataset, test_dataset, affinity_graph, drug_pos, target_pos
 
 
-def get_affinity_graph(dataset, adj, num_pos, pos_threshold):
-    dataset_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/'
+def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
+    dataset_path = data_path + dataset + '/'
     num_drug, num_target = adj.shape[0], adj.shape[1]
 
     dt_ = adj.copy()
@@ -269,9 +269,9 @@ def smile_to_graph(smile):
     return c_size, features, edge_index, edge_index_neighbor
 
 
-def get_target_molecule_graph(proteins, dataset):
-    msa_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/aln'
-    contac_path = '/kaggle/input/msgc-dta/MSGC-DTA/data/' + dataset + '/pconsc4'    
+def get_target_molecule_graph(data_path, proteins, dataset):
+    msa_path = data_path + dataset + '/aln'
+    contac_path = data_path + dataset + '/pconsc4'    
 
     target_graph = OrderedDict()
     target_graph_neighbor = OrderedDict()
