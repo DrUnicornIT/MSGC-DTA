@@ -180,7 +180,35 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
     ), 0)
     adj_features = np.zeros_like(adj)
     adj_features[adj != 0] = 1
-    features = np.concatenate((node_type_features, adj_features), 1)
+    #________________________
+    d_1d_embeds = np.load(data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
+    d_2d_embeds = np.load(data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
+    d_3d_embeds = np.load(data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
+
+    t_1d_embeds = np.load(data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
+    t_2d_embeds = np.load(data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
+    t_3d_embeds = np.load(data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
+    
+    print(d_1d_embeds.shape)
+    print(d_2d_embeds.shape)
+    print(d_3d_embeds.shape)
+    print(t_1d_embeds.shape)
+    print(t_2d_embeds.shape)
+    print(t_3d_embeds.shape)
+    
+    d_embeddings = np.concatenate((d_1d_embeds, d_2d_embeds, d_3d_embeds), axis=1)
+    t_embeddings = np.concatenate((t_1d_embeds, t_2d_embeds, t_3d_embeds), axis=1)
+
+    print("ADUUU")
+    print(d_embeddings.shape)
+    print(num_drug)
+    node_features_dt123 = np.concatenate((
+        d_embeddings,
+        t_embeddings
+    ), 0)
+    #________________________
+
+    features = np.concatenate((node_type_features, adj_features, node_features_dt123), 1)
     affinity_graph = DATA.Data(x=torch.Tensor(features), adj=torch.Tensor(adj),
                                edge_index=torch.LongTensor(edge_indexs))
     affinity_graph.__setitem__("edge_weight", torch.Tensor(edge_weights))
