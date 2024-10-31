@@ -291,7 +291,7 @@ class DenseGCNModel(nn.Module):
 
     def forward(self, graph):
         feature_drug = self.layer_drug(graph.drug_feature)
-        feature_target = self.layer_drug(graph.target_feature)
+        feature_target = self.layer_target(graph.target_feature)
         emb_feature = torch.cat([feature_drug, feature_target], dim=0)
 
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
