@@ -432,8 +432,8 @@ class PredictModule(nn.Module):
         super(PredictModule, self).__init__()
         self.dtf = Feature_Fusion(channels= 2 * embedding_dim)
 
-        # self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
-        # mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
+        self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
+        mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
 
         self.prediction_func = lambda x, y: torch.cat((x, y), -1)
         mlp_layers_dim = [2 * embedding_dim, 1024, 512, output_dim]
@@ -446,9 +446,9 @@ class PredictModule(nn.Module):
         drug_feature = drug_embedding[drug_id.int().cpu().numpy()]
         target_feature = target_embedding[target_id.int().cpu().numpy()]
         
-        concat_feature = self.dtf(drug_feature, target_feature)
+        # concat_feature = self.dtf(drug_feature, target_feature)
 
-        # concat_feature = self.prediction_func(drug_feature, target_feature)
+        concat_feature = self.prediction_func(drug_feature, target_feature)
         
         mlp_embeddings = self.mlp(concat_feature)
         link_embeddings = mlp_embeddings[-2]
