@@ -295,6 +295,7 @@ class DenseGCNModel(nn.Module):
         emb_feature = torch.cat([feature_drug, feature_target], dim=0)
 
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
+        print(xs.shape)
         xs = torch.cat([xs, emb_feature], dim=1)
         print(xs.shape)
         indexs = torch.where(adj != 0)

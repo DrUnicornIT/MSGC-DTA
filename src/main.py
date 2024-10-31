@@ -143,7 +143,7 @@ def train_predict():
     device = torch.device('cuda:{}'.format(args.cuda) if torch.cuda.is_available() else 'cpu')
     model = CSCoDTA(tau=args.tau,
                     lam=args.lam,
-                    ns_dims=[affinity_graph.num_drug + affinity_graph.num_target + 2, 512, 256],
+                    ns_dims=[affinity_graph.num_drug + affinity_graph.num_target + 2 + 256, 512, 256],
                     d_ms_dims=[78, 78, 78 * 2, 128],
                     t_ms_dims=[54, 54, 54 * 2, 128],
                     d_embeddings=d_embeddings,
