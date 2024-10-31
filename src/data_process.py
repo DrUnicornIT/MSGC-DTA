@@ -199,17 +199,8 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
     d_embeddings = np.concatenate((d_1d_embeds, d_2d_embeds, d_3d_embeds), axis=1)
     t_embeddings = np.concatenate((t_1d_embeds, t_2d_embeds, t_3d_embeds), axis=1)
 
-    print("ADUUU")
-    print(d_embeddings.shape)
-    print(num_drug)
-    node_features_dt123 = np.concatenate((
-        d_embeddings,
-        t_embeddings
-    ), 0)
-    #________________________
-
     features = np.concatenate((node_type_features, adj_features), 1)
-    affinity_graph = DATA.Data(x=torch.Tensor(features), dt123 = node_features_dt123, adj=torch.Tensor(adj),
+    affinity_graph = DATA.Data(x=torch.Tensor(features), drug_feature = d_embeddings, target_feature = t_embeddings, adj=torch.Tensor(adj),
                                edge_index=torch.LongTensor(edge_indexs))
     affinity_graph.__setitem__("edge_weight", torch.Tensor(edge_weights))
     affinity_graph.__setitem__("num_drug", num_drug)
