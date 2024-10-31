@@ -287,8 +287,7 @@ class DenseGCNModel(nn.Module):
                                         dropout_layers_index=list(range(self.num_layers)))
 
     def forward(self, graph, embed):
-        embed = self.ln(..)
-        x
+        print(graph.dt123.shape)
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
         indexs = torch.where(adj != 0)
         edge_indexs = torch.cat((torch.unsqueeze(indexs[0], 0), torch.unsqueeze(indexs[1], 0)), 0)
