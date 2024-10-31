@@ -435,8 +435,8 @@ class PredictModule(nn.Module):
         self.prediction_func, prediction_dim_func = (lambda x, y: torch.cat((x, y), -1), lambda dim: 4 * dim)
         mlp_layers_dim = [prediction_dim_func(embedding_dim), 1024, 512, output_dim]
 
-        self.prediction_func = lambda x, y: torch.cat((x, y), -1)
-        mlp_layers_dim = [2 * embedding_dim, 1024, 512, output_dim]
+        # self.prediction_func = lambda x, y: torch.cat((x, y), -1)
+        # mlp_layers_dim = [2 * embedding_dim, 1024, 512, output_dim]
 
         self.mlp = LinearBlock(mlp_layers_dim, 0.1, relu_layers_index=[0, 1], dropout_layers_index=[0, 1])
 
