@@ -208,8 +208,8 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
     ), 0)
     #________________________
 
-    features = np.concatenate((node_type_features, adj_features, node_features_dt123), 1)
-    affinity_graph = DATA.Data(x=torch.Tensor(features), adj=torch.Tensor(adj),
+    features = np.concatenate((node_type_features, adj_features), 1)
+    affinity_graph = DATA.Data(x=torch.Tensor(features), dt123 = node_features_dt123, adj=torch.Tensor(adj),
                                edge_index=torch.LongTensor(edge_indexs))
     affinity_graph.__setitem__("edge_weight", torch.Tensor(edge_weights))
     affinity_graph.__setitem__("num_drug", num_drug)
