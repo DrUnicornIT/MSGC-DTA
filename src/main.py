@@ -1,4 +1,8 @@
 import os
+import sys
+import warnings
+sys.stdout = open(os.devnull, 'w')
+warnings.filterwarnings("ignore")
 import argparse
 import torch
 import json
@@ -182,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=2024, help='Random Seed')
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
-    parser.add_argument('--data_path', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/data/')
+    parser.add_argument('--data_path', type=str, default='/tmp/data/')
     parser.add_argument('--dataset', type=str, default='davis')
     parser.add_argument('--epochs', type=int, default=2500)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
@@ -194,7 +198,8 @@ if __name__ == '__main__':
     parser.add_argument('--pos_threshold', type=float, default=8.0)
 
     args, _ = parser.parse_known_args()
-    # wandb.login(key="b67abb17df1ee7142cd9e8950d8b6d9aca0585cd")
+    os.environ['WANDB_SILENT']="true"
+    wandb.login(key="1b5ec2ac97303027c1da479ba2132c35d8c4551c")
     # Setup Wandb project
     wandb.init(
         project="MSGC-DTA",
