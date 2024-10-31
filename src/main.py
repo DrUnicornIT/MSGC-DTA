@@ -1,4 +1,8 @@
 import os
+import sys
+import warnings
+sys.stdout = open(os.devnull, 'w')
+warnings.filterwarnings("ignore")
 import argparse
 import torch
 import json
@@ -144,8 +148,8 @@ def train_predict():
     model = CSCoDTA(tau=args.tau,
                     lam=args.lam,
                     ns_dims=[affinity_graph.num_drug + affinity_graph.num_target + 2, 512, 256],
-                    d_ms_dims=[78, 78, 78 * 2, 128],
-                    t_ms_dims=[54, 54, 54 * 2, 128],
+                    d_ms_dims=[78, 78 * 2, 78 * 4, 78 * 8],
+                    t_ms_dims=[54, 54 * 2, 54 * 4, 54 * 8],
                     d_embeddings=d_embeddings,
                     t_embeddings=t_embeddings,
                     embedding_dim=128,
@@ -182,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=2024, help='Random Seed')
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
-    parser.add_argument('--data_path', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/data/')
+    parser.add_argument('--data_path', type=str, default='/tmp/data/')
     parser.add_argument('--dataset', type=str, default='davis')
     parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
@@ -194,7 +198,8 @@ if __name__ == '__main__':
     parser.add_argument('--pos_threshold', type=float, default=8.0)
 
     args, _ = parser.parse_known_args()
-    # wandb.login(key="b67abb17df1ee7142cd9e8950d8b6d9aca0585cd")
+    os.environ['WANDB_SILENT']="true"
+    wandb.login(key="b67abb17df1ee7142cd9e8950d8b6d9aca0585cd")
     # Setup Wandb project
     wandb.init(
         project="MSGC-DTA",

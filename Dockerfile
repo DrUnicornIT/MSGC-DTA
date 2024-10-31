@@ -6,6 +6,6 @@ RUN pip3 install scipy==1.10.1
 RUN pip3 install rdkit
 RUN pip3 install wandb
 
-COPY data/ /root/MSGC-DTA
+COPY data/ /tmp/data/
 WORKDIR /code/MSGC-DTA
 COPY src/ /code/MSGC-DTA/
