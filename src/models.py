@@ -285,11 +285,18 @@ class DenseGCNModel(nn.Module):
         self.num_layers = len(layers_dim) - 1
         self.graph_conv = DenseGCNBlock(layers_dim, 0.1, relu_layers_index=list(range(self.num_layers)),
                                         dropout_layers_index=list(range(self.num_layers)))
+        self.layer_drug = nn.Linear(912, 256)
+        self.layer_target = nn.Linear(2148, 256)
+
 
     def forward(self, graph):
-        print(graph.drug_feature.shape)
-        exit()
+        feature_drug = self.layer_drug(graph.drug_feature)
+        feature_target = self.layer_drug(graph.target_feature)
+        emb_feature = torch.cat([feature_drug, feature_target], dim=0)
+
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
+        xs = torch.cat([xs, emb_feature], dim=1)
+
         indexs = torch.where(adj != 0)
         edge_indexs = torch.cat((torch.unsqueeze(indexs[0], 0), torch.unsqueeze(indexs[1], 0)), 0)
         edge_indexs_dropout, edge_weights_dropout = dropout_adj(edge_index=edge_indexs, edge_attr=adj[indexs],
