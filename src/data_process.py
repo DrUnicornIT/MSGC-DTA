@@ -205,8 +205,8 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
     affinity_graph.__setitem__("edge_weight", torch.Tensor(edge_weights))
     affinity_graph.__setitem__("num_drug", num_drug)
     affinity_graph.__setitem__("num_target", num_target)
-    affinity_graph.__setitem__("drug_feature", d_embeddings)
-    affinity_graph.__setitem__("target_feature", t_embeddings)
+    affinity_graph.__setitem__("drug_feature", torch.Tensor(d_embeddings))
+    affinity_graph.__setitem__("target_feature", torch.Tensor(t_embeddings))
 
     return affinity_graph, drug_pos, target_pos
 
