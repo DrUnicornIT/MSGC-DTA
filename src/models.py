@@ -287,7 +287,7 @@ class DenseGCNModel(nn.Module):
                                         dropout_layers_index=list(range(self.num_layers)))
 
     def forward(self, graph):
-        print(graph.dt123.shape)
+        print(graph.drug_feature.shape)
         exit()
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
         indexs = torch.where(adj != 0)
