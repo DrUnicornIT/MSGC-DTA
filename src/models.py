@@ -296,7 +296,7 @@ class DenseGCNModel(nn.Module):
 
         xs, adj, num_d, num_t = graph.x, graph.adj, graph.num_drug, graph.num_target
         xs = torch.cat([xs, emb_feature], dim=1)
-
+        print(xs.shape)
         indexs = torch.where(adj != 0)
         edge_indexs = torch.cat((torch.unsqueeze(indexs[0], 0), torch.unsqueeze(indexs[1], 0)), 0)
         edge_indexs_dropout, edge_weights_dropout = dropout_adj(edge_index=edge_indexs, edge_attr=adj[indexs],
