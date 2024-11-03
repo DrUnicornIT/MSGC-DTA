@@ -285,8 +285,8 @@ class DenseGCNModel(nn.Module):
         self.num_layers = len(layers_dim) - 1
         self.graph_conv = DenseGCNBlock(layers_dim, 0.1, relu_layers_index=list(range(self.num_layers)),
                                         dropout_layers_index=list(range(self.num_layers)))
-        self.layer_drug = nn.Linear(912, 256)
-        self.layer_target = nn.Linear(2148, 256)
+        self.layer_drug = nn.Linear(912, 512)
+        self.layer_target = nn.Linear(2148, 512)
 
 
     def forward(self, graph):

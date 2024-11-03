@@ -199,7 +199,7 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
     d_embeddings = np.concatenate((d_1d_embeds, d_2d_embeds, d_3d_embeds), axis=1)
     t_embeddings = np.concatenate((t_1d_embeds, t_2d_embeds, t_3d_embeds), axis=1)
 
-    features = np.concatenate((node_type_features, adj_features), 1)
+    features = node_type_features
     affinity_graph = DATA.Data(x=torch.Tensor(features), adj=torch.Tensor(adj),
                                edge_index=torch.LongTensor(edge_indexs))
     affinity_graph.__setitem__("edge_weight", torch.Tensor(edge_weights))
