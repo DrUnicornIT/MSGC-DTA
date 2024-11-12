@@ -123,13 +123,13 @@ def train_predict():
                                                            batch_size=affinity_graph.num_target)
     #________________________________________________
     
-    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_KIBA.npy')
+    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_KIBA.npy')
+    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_KIBA.npy')
     
-    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_KIBA.npy') 
+    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_KIBA.npy')
+    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_KIBA.npy')
     
     print(d_1d_embeds.shape)
     print(d_2d_embeds.shape)
