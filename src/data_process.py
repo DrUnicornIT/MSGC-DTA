@@ -181,13 +181,13 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
     adj_features = np.zeros_like(adj)
     adj_features[adj != 0] = 1
     #________________________
-    d_1d_embeds = np.load(data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load(data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load(data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_1d_embeds = np.load(data_path + 'results/unique_drug_Mol2Vec_EMB_KIBA.npy')
+    d_2d_embeds = np.load(data_path + 'results/unique_drug_GIN_EMB_KIBA.npy')
+    d_3d_embeds = np.load(data_path + 'results/unique_drug_E3nn_EMB_KIBA.npy')
 
-    t_1d_embeds = np.load(data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load(data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load(data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_1d_embeds = np.load(data_path + 'results/unique_protein_ProVec_EMB_KIBA.npy') 
+    t_2d_embeds = np.load(data_path + 'results/unique_protein_BERT_EMB_KIBA.npy')
+    t_3d_embeds = np.load(data_path + 'results/unique_protein_ESM_EMB_KIBA.npy')
     
     print(d_1d_embeds.shape)
     print(d_2d_embeds.shape)
