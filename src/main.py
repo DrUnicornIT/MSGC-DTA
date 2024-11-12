@@ -121,13 +121,13 @@ def train_predict():
                                                            batch_size=affinity_graph.num_target)
     #________________________________________________
     
-    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_KIBA.npy')
+    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_KIBA.npy')
+    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_KIBA.npy')
     
-    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_KIBA.npy') 
+    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_KIBA.npy')
+    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_KIBA.npy')
     
     print(d_1d_embeds.shape)
     print(d_2d_embeds.shape)
@@ -183,14 +183,14 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=str, default='0', help='Number of GPUs') # 0 -> CPU
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--data_path', type=str, default='/kaggle/input/msgc-dta/MSGC-DTA/data/')
-    parser.add_argument('--dataset', type=str, default='davis')
-    parser.add_argument('--epochs', type=int, default=2500)    # --kiba 3000
+    parser.add_argument('--dataset', type=str, default='kiba')
+    parser.add_argument('--epochs', type=int, default=6000)    # --kiba 3000
     parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--lr', type=float, default=0.0002)
-    parser.add_argument('--edge_dropout_rate', type=float, default=0.2)   # --kiba 0.
+    parser.add_argument('--edge_dropout_rate', type=float, default=0.)   # --kiba 0.
     parser.add_argument('--tau', type=float, default=0.8)
     parser.add_argument('--lam', type=float, default=0.5)
-    parser.add_argument('--num_pos', type=int, default=3)    # --kiba 10
+    parser.add_argument('--num_pos', type=int, default=10)    # --kiba 10
     parser.add_argument('--pos_threshold', type=float, default=8.0)
 
     args, _ = parser.parse_known_args()
