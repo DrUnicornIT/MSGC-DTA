@@ -67,7 +67,9 @@ class GATBlock(nn.Module):
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout_rate)
-
+        encoder_transformer_layer = nn.TransformerEncoderLayer(d_model=128, nhead=1, dim_feedforward=16,
+dropout=0.1)
+        self.transformer = nn.TransformerEncoder(encoder_layer=encoder_transformer_layer, num_layers=1)
     def forward(self, x, edge_index, edge_weight, batch):
         output = x
 
@@ -80,7 +82,7 @@ class GATBlock(nn.Module):
         for fc in self.mol_fcs:
             output = fc(self.relu(output))
             output = self.dropout(output)
-
+        output = self.transformer(output)
         return output
 
 class GCNBlock_MIX(nn.Module):
