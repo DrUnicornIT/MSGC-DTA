@@ -407,6 +407,7 @@ dropout=0.1)
         num_d = affinity_graph.num_drug
 
         affinity_graph_embedding = self.affinity_graph_conv(affinity_graph)[-1]
+        print(affinity_graph_embedding.shape)
         affinity_transformers = self.transformer(affinity_graph_embedding)
         print(affinity_transformers.shape)
         # print(num_d)
