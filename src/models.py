@@ -368,25 +368,23 @@ class Contrast(nn.Module):
 
         return self.lam * lori_a + (1 - self.lam) * lori_b, torch.cat((za_proj, zb_proj), 1)
 
-
 class EnsembleEmbedding(nn.Module):
     def __init__(self, embeddings, sizes = [100, 300], target_size = 128):
         super(EnsembleEmbedding, self).__init__()
-        num_dims = len(embeddings)
         self.params = nn.ParameterList([nn.Parameter(torch.from_numpy(embedding).float(), requires_grad = True) for embedding in embeddings])
-        # self.linears = nn.ModuleList([nn.Linear(sizes[i], mid_size) for i in range(num_dims)])
-        self.linear = nn.Linear(sum(sizes), target_size)
-        self.relu = nn.ReLU()
-    def forward(self):
-        # embeds = []
-        # for i, param in enumerate(self.params):
-        #     embed_prj = self.relu(self.linears[i](normalize(param)))
-        #     embeds.append(embed_prj)
-        # embeds = torch.cat(embeds, dim = -1)
-        embeds = torch.cat([normalize(param.data) for param in self.params], dim=-1)
-        embeds = self.linear(embeds)
-        return embeds
         
+        layers_dim = [sum(sizes), 512, 256, target_size]
+        self.linears = nn.ModuleList([nn.Sequential(
+            nn.Linear(layers_dim[i], layers_dim[i+1]),
+            nn.ReLU(),
+            nn.Dropout(0.2)
+        )for i in range(3)])
+
+    def forward(self):
+        embeds = torch.cat([normalize(param.data) for param in self.params], dim=-1)
+        for linear in self.linears:
+            embeds = linear(embeds)
+        return embeds
 
 class CSCoDTA(nn.Module):
     def __init__(self, tau, lam, ns_dims, d_ms_dims, t_ms_dims, d_embeddings, t_embeddings, embedding_dim=128, dropout_rate=0.2):
