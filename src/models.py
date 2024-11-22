@@ -234,7 +234,8 @@ class DenseGCNBlock(nn.Module):
         self.dropout = nn.Dropout(dropout_rate)
         self.relu_layers_index = relu_layers_index
         self.dropout_layers_index = dropout_layers_index
-
+        encoder_transformer_layer = nn.TransformerEncoderLayer(d_model=128, nhead=1, dim_feedforward=16, dropout=0.1)
+        self.transformer = nn.TransformerEncoder(encoder_layer=encoder_transformer_layer, num_layers=1)
     def forward(self, x, adj):
         output = x
         embeddings = []
@@ -245,7 +246,7 @@ class DenseGCNBlock(nn.Module):
             if conv_layer_index in self.dropout_layers_index:
                 output = self.dropout(output)
             embeddings.append(torch.squeeze(output, dim=0))
-
+        embeddings = self.transformer(embeddings)
         return embeddings
 
 
