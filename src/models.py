@@ -396,7 +396,7 @@ class CSCoDTA(nn.Module):
         
         self.linear = nn.Linear(ns_dims[-1], embedding_dim)
 
-        encoder_transformer_layer = nn.TransformerEncoderLayer(d_model=128, nhead=1, dim_feedforward=16,
+        encoder_transformer_layer = nn.TransformerEncoderLayer(d_model=256, nhead=1, dim_feedforward=16,
 dropout=0.1)
         self.transformer = nn.TransformerEncoder(encoder_layer=encoder_transformer_layer, num_layers=1)
         
