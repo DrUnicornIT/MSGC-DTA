@@ -396,7 +396,7 @@ class CSCoDTA(nn.Module):
         
         self.linear = nn.Linear(ns_dims[-1], embedding_dim)
 
-        encoder_transformer_layer = nn.TransformerEncoderLayer(d_model=256, nhead=1, dim_feedforward=16,
+        encoder_transformer_layer = nn.TransformerEncoderLayer(d_model=256, nhead=3, dim_feedforward=16,
 dropout=0.1)
         self.transformer = nn.TransformerEncoder(encoder_layer=encoder_transformer_layer, num_layers=1)
         
@@ -421,10 +421,11 @@ dropout=0.1)
         drug_graph_embedding = torch.cat([drug_graph_embedding_dynamic, drug_graph_embedding_static], dim=-1)
         target_graph_embedding = torch.cat([target_graph_embedding_dynamic, target_graph_embedding_static], dim=-1)
         
+        drug_embed_hybrid = self.transformer(drug_graph_embedding)
         target_embed_hybrid = self.transformer(target_graph_embedding)
         
-        dru_loss, drug_embedding = self.drug_contrast(affinity_transformers[:num_d], drug_graph_embedding, drug_pos)
-        tar_loss, target_embedding = self.target_contrast(affinity_transformers[num_d:], target_graph_embedding,
+        dru_loss, drug_embedding = self.drug_contrast(affinity_transformers[:num_d], drug_embed_hybrid, drug_pos)
+        tar_loss, target_embedding = self.target_contrast(affinity_transformers[num_d:], target_embed_hybrid,
                                                           target_pos)
 
         return dru_loss + tar_loss, drug_embedding, target_embedding
