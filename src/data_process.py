@@ -168,6 +168,7 @@ def get_affinity_graph(data_path, dataset, adj, num_pos, pos_threshold):
         np.concatenate((np.zeros([num_drug, num_drug]), adj_1), 1),
         np.concatenate((adj_2, np.zeros([num_target, num_target])), 1)
     ), 0)
+    print(adj)
     train_row_ids, train_col_ids = np.where(adj != 0)
     edge_indexs = np.concatenate((
         np.expand_dims(train_row_ids, 0),
