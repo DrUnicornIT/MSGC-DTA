@@ -63,6 +63,7 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
 
     # Log the mean loss for the epoch to wandb
     wandb.log({"mean_loss": mean_loss})
+    torch.save(model.state_dict(), "model/")
 
 
 def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs_DataLoader, affinity_graph, drug_pos,
