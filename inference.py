@@ -114,27 +114,16 @@ if __name__ == '__main__':
     #-------------Pretrained Embedding----------------
 
     d_1d_embeds = np.load(args.data_path + f'results/unique_drug_Mol2Vec_EMB_{args.dataset.upper()}.npy')
-    d_1d_covid = np.load(args.data_path + f'results/unique_drug_Mol2Vec_EMB_COVID.npy')
-
     d_2d_embeds = np.load(args.data_path + f'results/unique_drug_GIN_EMB_{args.dataset.upper()}.npy')
-    d_2d_covid = np.load(args.data_path + f'results/unique_drug_GIN_EMB_COVID.npy')
     d_3d_embeds = np.load(args.data_path + f'results/unique_drug_E3nn_EMB_{args.dataset.upper()}.npy')
-    d_3d_covid = np.load(args.data_path + f'results/unique_drug_E3nn_EMB_COVID.npy')
-
-    d_embeddings = (np.vstack((d_1d_embeds,d_1d_covid)), np.vstack((d_2d_embeds,d_2d_covid)), np.vstack((d_3d_embeds,d_3d_covid)))
+    d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
 
     t_1d_embeds = np.load(args.data_path + f'results/unique_protein_ProVec_EMB_{args.dataset.upper()}.npy') 
-    t_1d_covid = np.load(args.data_path + f'results/unique_protein_ProVec_EMB_COVID.npy') 
-
     t_2d_embeds = np.load(args.data_path + f'results/unique_protein_BERT_EMB_{args.dataset.upper()}.npy')
-    t_2d_covid = np.load(args.data_path + f'results/unique_protein_BERT_EMB_COVID.npy') 
-
     t_3d_embeds = np.load(args.data_path + f'results/unique_protein_ESM_EMB_{args.dataset.upper()}.npy')
-    t_3d_covid = np.load(args.data_path + f'results/unique_protein_ESM_EMB_COVID.npy') 
+    t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
 
-    t_embeddings = (np.vstack((t_1d_embeds,t_1d_covid)), np.vstack((t_2d_embeds,t_2d_covid)), np.vstack((t_3d_embeds,t_3d_covid)))
 
-    print(t_embeddings[0].shape)
     #-------------Training Model----------------
 
     device = torch.device('cuda:{}'.format(args.cuda) if torch.cuda.is_available() else 'cpu')
@@ -153,13 +142,13 @@ if __name__ == '__main__':
     model.to(device)
     predictor.to(device)
 
-    model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')))
-    predictor.load_state_dict(torch.load("davis_sota_predictor.pth", map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load("checkpoint/davis_sota_main_2.pth", map_location=torch.device('cpu')))
+    predictor.load_state_dict(torch.load("checkpoint/davis_sota_predictor_2.pth", map_location=torch.device('cpu')))
 
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
                     
     print(P)
-    r = model_evaluate(G, P, full = False)
+    r = model_evaluate(G, P, full = True)
     print("result:", r)
     print({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})

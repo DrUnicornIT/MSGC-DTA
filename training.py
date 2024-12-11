@@ -201,32 +201,6 @@ if __name__ == '__main__':
         filter(lambda p: p.requires_grad, chain(model.parameters(), predictor.parameters())), lr=args.lr, weight_decay=0)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
                                                     max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
-    
-    
-    # model.load_state_dict(torch.load("/home/ubuntu/Documents/tmp/MSGC-DTA/davis_sota_main.pth"), False)
-
-    # checkpoint = torch.load("/home/ubuntu/Documents/tmp/MSGC-DTA/davis_sota_main.pth", weights_only=True)
-
-    # print("Test first")
-
-    # G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
-    #                 affinity_graph, drug_pos, target_pos)
-    # r = model_evaluate(G, P, full = False)
-    # print("result:", r)
-
-    # torch.save(model.state_dict(), "davis_sota_main.pth")
-    # torch.save(predictor.state_dict(), "davis_sota_predictor.pth")
-    # print("Save done")
-    # model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')))
-    # predictor.load_state_dict(torch.load("davis_sota_predictor.pth", map_location=torch.device('cpu')))
-    # print("OK")
-    # G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
-    #                 affinity_graph, drug_pos, target_pos)
-    # r = model_evaluate(G, P, full = False)
-    # print("result:", r)
-    # wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
-
-    # exit()
 
     print("Start training...")
     for epoch in range(args.epochs):
