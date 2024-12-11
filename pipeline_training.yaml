@@ -1,15 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: cleaning-data-
+  generateName: training-model-
   annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2024-10-25T20:32:26.879528',
-    pipelines.kubeflow.org/pipeline_spec: '{"description": "Cleaning data", "inputs":
-      [{"name": "image"}], "name": "Cleaning data"}'}
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Training model", "inputs":
+      [{"name": "image"}], "name": "Training model"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
 spec:
-  entrypoint: cleaning-data
+  entrypoint: training-model
   templates:
-  - name: clean-data
+  - name: train-model
     container:
       command: [python3, main.py, ' > out.txt']
       image: '{{inputs.parameters.image}}'
@@ -25,14 +25,14 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-  - name: cleaning-data
+  - name: training-model
     inputs:
       parameters:
       - {name: image}
     dag:
       tasks:
-      - name: clean-data
-        template: clean-data
+      - name: train-model
+        template: train-model
         arguments:
           parameters:
           - {name: image, value: '{{inputs.parameters.image}}'}

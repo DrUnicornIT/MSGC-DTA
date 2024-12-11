@@ -11,21 +11,13 @@ from datetime import datetime
 import wandb
 import random
 
-
-from data_process import load_data, process_data, get_drug_molecule_graph, get_target_molecule_graph
-
-from utils import GraphDataset, collate, model_evaluate
-from models import CSCoDTA, PredictModule
-
 def set_seed(seed: int = 42) -> None:
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
-    # When running on the CuDNN backend, two further options must be set
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    # Set a fixed value for the hash seed
     os.environ["PYTHONHASHSEED"] = str(seed)
     print(f"Random seed set as {seed}")
 
@@ -100,112 +92,16 @@ def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs
             total_labels = torch.cat((total_labels, data.y.view(-1, 1).cpu()), 0)
     return total_labels.numpy().flatten(), total_preds.numpy().flatten()
 
-# Training data
-def train_predict(): 
-    print("Data preparation in progress for the {} dataset...".format(args.dataset))
 
-    # Loading affinity
-    affinity_mat = load_data(args.data_path, args.dataset)
-    print(affinity_mat)
-    
-    # Process build train data and test data
-    train_data, test_data, affinity_graph, drug_pos, target_pos = process_data(args.data_path, affinity_mat, args.dataset, args.num_pos, args.pos_threshold)
-    
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate)
-    test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
-    #________________________________________________
-    drug_graphs_dict, drug_graphs_neighbor_dict = get_drug_molecule_graph(
-        json.load(open(f'{args.data_path}{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
-    
-    drug_graphs_Data = GraphDataset(graphs_dict=drug_graphs_dict, dttype="drug")
-    drug_graphs_DataLoader = torch.utils.data.DataLoader(drug_graphs_Data, shuffle=False, collate_fn=collate,
-                                                         batch_size=affinity_graph.num_drug)
-    
-    drug_graphs_neighbor_Data = GraphDataset(graphs_dict=drug_graphs_neighbor_dict, dttype="drug")
-    drug_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(drug_graphs_neighbor_Data, shuffle=False, collate_fn=collate,
-                                                         batch_size=affinity_graph.num_drug)
-    #________________________________________________
-    target_graphs_dict, target_graphs_neighbor_dict = get_target_molecule_graph(args.data_path,
-        json.load(open(f'{args.data_path}{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
-    target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
-    target_graphs_DataLoader = torch.utils.data.DataLoader(target_graphs_Data, shuffle=False, collate_fn=collate,
-                                                           batch_size=affinity_graph.num_target)
-    
-    target_graphs_neighbor_Data = GraphDataset(graphs_dict=target_graphs_neighbor_dict, dttype="target")
-    target_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(target_graphs_neighbor_Data, shuffle=False, collate_fn=collate,
-                                                           batch_size=affinity_graph.num_target)
-    #________________________________________________
-    
-    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
-    
-    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
-    
-    print(d_1d_embeds.shape)
-    print(d_2d_embeds.shape)
-    print(d_3d_embeds.shape)
-    print(t_1d_embeds.shape)
-    print(t_2d_embeds.shape)
-    print(t_3d_embeds.shape)
-    
-    d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
-    t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
 
-    print("Model preparation... ")
-    device = torch.device('cuda:{}'.format(args.cuda) if torch.cuda.is_available() else 'cpu')
-    model = CSCoDTA(tau=args.tau,
-                    lam=args.lam,
-                    ns_dims=[affinity_graph.num_drug + affinity_graph.num_target + 2, 512, 256],
-                    d_ms_dims=[78, 78, 78 * 2, 128],
-                    t_ms_dims=[54, 54, 54 * 2, 128],
-                    d_embeddings=d_embeddings,
-                    t_embeddings=t_embeddings,
-                    embedding_dim=128,
-                    dropout_rate=args.edge_dropout_rate)
-    predictor = PredictModule()
-    drug_pos = drug_pos.to(device)
-    target_pos = target_pos.to(device)
-    model.to(device)
-    predictor.to(device)
-    optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, chain(model.parameters(), predictor.parameters())), lr=args.lr, weight_decay=0)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
-                                                    max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
-    
-    
-    model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')).state_dict())
-    predictor.load_state_dict(torch.load("davis_sota_predictor.pth", map_location=torch.device('cpu')))
-    print("OK")
-    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
-                    affinity_graph, drug_pos, target_pos)
-    r = model_evaluate(G, P, full = False)
-    print("result:", r)
-    wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
-    
-    exit(0)
-    
-    # print("Start training...")
-    # for epoch in range(args.epochs):
-    #     train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
-    #           args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
-    #     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
-    #                 affinity_graph, drug_pos, target_pos)
-    #     r = model_evaluate(G, P, full = False)
-    #     print("result:", r)
-    #     wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
-    
-    # torch.save(model, "davis_sota_main.pth")
-    # torch.save(predictor.state_dict(), "davis_sota_predictor.pth")
 
-    # print('\npredicting for test data')
-    # G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
-    #             affinity_graph, drug_pos, target_pos)
-    # result = model_evaluate(G, P, full = True)
-    # print("result:", result)
-    # wandb.finish()
+from tools.process import load_data, process_data
+from tools.drug_molecule import get_drug_molecule_graph
+from tools.target_molecule import get_target_molecule_graph
+from tools.utils import GraphDataset, collate, model_evaluate
+from models.MSGC_DTA import MSGCDTA
+from models.prediction import PredictModule
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -231,6 +127,123 @@ if __name__ == '__main__':
         project="MSGC-DTA",
         config = vars(args)
     )
-    
     set_seed(args.seed)
-    train_predict()  # Training data
+
+
+    print("Data preparation in progress for the {} dataset...".format(args.dataset))
+
+    #-------------Loading affinity----------------
+    affinity_mat = load_data(args.data_path, args.dataset)
+
+
+    #-------------Process build train data and test data----------------
+    train_data, test_data, affinity_graph, drug_pos, target_pos = process_data(args.data_path, affinity_mat, args.dataset, args.num_pos, args.pos_threshold)
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
+
+
+    #-------------Graph drug molecule----------------
+    drug_graphs_dict, drug_graphs_neighbor_dict = get_drug_molecule_graph(
+        json.load(open(f'{args.data_path}{args.dataset}/drugs.txt'), object_pairs_hook=OrderedDict))
+    
+    drug_graphs_Data = GraphDataset(graphs_dict=drug_graphs_dict, dttype="drug")
+    drug_graphs_DataLoader = torch.utils.data.DataLoader(drug_graphs_Data, shuffle=False, collate_fn=collate,
+                                                         batch_size=affinity_graph.num_drug)
+    
+    ## drug_graphs_neighbor_Data = GraphDataset(graphs_dict=drug_graphs_neighbor_dict, dttype="drug")
+    ## drug_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(drug_graphs_neighbor_Data, shuffle=False, collate_fn=collate, batch_size=affinity_graph.num_drug)
+    
+    
+    #-------------Graph target molecule----------------
+    target_graphs_dict, target_graphs_neighbor_dict = get_target_molecule_graph(args.data_path,
+        json.load(open(f'{args.data_path}{args.dataset}/targets.txt'), object_pairs_hook=OrderedDict), args.dataset)
+    target_graphs_Data = GraphDataset(graphs_dict=target_graphs_dict, dttype="target")
+    target_graphs_DataLoader = torch.utils.data.DataLoader(target_graphs_Data, shuffle=False, collate_fn=collate,
+                                                           batch_size=affinity_graph.num_target)
+    
+    ## target_graphs_neighbor_Data = GraphDataset(graphs_dict=target_graphs_neighbor_dict, dttype="target")
+    ## target_graphs_neighbor_DataLoader = torch.utils.data.DataLoader(target_graphs_neighbor_Data, shuffle=False, collate_fn=collate, batch_size=affinity_graph.num_target)
+    
+
+    #-------------Pretrained Embedding----------------
+
+    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
+    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
+    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
+
+    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
+    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
+    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
+
+
+    #-------------Training Model----------------
+
+    device = torch.device('cuda:{}'.format(args.cuda) if torch.cuda.is_available() else 'cpu')
+    model = MSGCDTA(tau=args.tau,
+                    lam=args.lam,
+                    ns_dims=[affinity_graph.num_drug + affinity_graph.num_target + 2, 512, 256],
+                    d_ms_dims=[78, 78, 78 * 2, 128],
+                    t_ms_dims=[54, 54, 54 * 2, 128],
+                    d_embeddings=d_embeddings,
+                    t_embeddings=t_embeddings,
+                    embedding_dim=128,
+                    dropout_rate=args.edge_dropout_rate)
+    predictor = PredictModule()
+    drug_pos = drug_pos.to(device)
+    target_pos = target_pos.to(device)
+    model.to(device)
+    predictor.to(device)
+
+
+    optimizer = torch.optim.Adam(
+        filter(lambda p: p.requires_grad, chain(model.parameters(), predictor.parameters())), lr=args.lr, weight_decay=0)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
+                                                    max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
+    
+    
+    # model.load_state_dict(torch.load("/home/ubuntu/Documents/tmp/MSGC-DTA/davis_sota_main.pth"), False)
+
+    # checkpoint = torch.load("/home/ubuntu/Documents/tmp/MSGC-DTA/davis_sota_main.pth", weights_only=True)
+
+    # print("Test first")
+
+    # G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
+    #                 affinity_graph, drug_pos, target_pos)
+    # r = model_evaluate(G, P, full = False)
+    # print("result:", r)
+
+    # torch.save(model, "davis_sota_main.pth")
+    # torch.save(predictor.state_dict(), "davis_sota_predictor.pth")
+    # print("Save done")
+    model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')).state_dict())
+    predictor.load_state_dict(torch.load("davis_sota_predictor.pth", map_location=torch.device('cpu')))
+    print("OK")
+    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
+                    affinity_graph, drug_pos, target_pos)
+    r = model_evaluate(G, P, full = False)
+    print("result:", r)
+    wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
+
+    exit()
+
+    print("Start training...")
+    for epoch in range(args.epochs):
+        train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, args.lr, epoch+1,
+              args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
+        G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
+                    affinity_graph, drug_pos, target_pos)
+        r = model_evaluate(G, P, full = False)
+        print("result:", r)
+        wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
+    
+    torch.save(model, "davis_sota_main.pth")
+    torch.save(predictor.state_dict(), "davis_sota_predictor.pth")
+
+    print('\npredicting for test data')
+    G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
+                affinity_graph, drug_pos, target_pos)
+    result = model_evaluate(G, P, full = True)
+    print("result:", result)
+    wandb.finish()
