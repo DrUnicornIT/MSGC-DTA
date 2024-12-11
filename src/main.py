@@ -75,8 +75,6 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
 
     # Log the mean loss for the epoch to wandb
     wandb.log({"mean_loss": mean_loss})
-    torch.save(model, "davis_sota_main.pth")
-    torch.save(predictor, "davis_sota_predictor.pth")
 
 def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs_DataLoader, affinity_graph, drug_pos,
          target_pos):
@@ -181,7 +179,10 @@ def train_predict():
         r = model_evaluate(G, P, full = False)
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
-
+        
+    torch.save(model, "kiba_sota_main.pth")
+    torch.save(predictor, "kiba_sota_predictor.pth")
+    
     print('\npredicting for test data')
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                 affinity_graph, drug_pos, target_pos)
