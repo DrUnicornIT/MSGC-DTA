@@ -119,7 +119,7 @@ def alnFilePrepare():
             os.makedirs(aln_dir)
 
         HHblits_bin_path = '/home/ubuntu/Documents/tmp/Protein/hh-suite/build/bin/hhblits'  # HHblits bin path
-        HHblits_db_path = '/home/ubuntu/Documents/tmp/Protein/uniclust30_2018_08'  # hhblits dataset for msa
+        HHblits_db_path = '/home/ubuntu/Documents/tmp/Protein/uniclust30_2018_08/uniclust30_2018_08'  # hhblits dataset for msa
         HHfilter_bin_path = '/home/ubuntu/Documents/tmp/Protein/hh-suite/build/bin/hhfilter'  # HHfilter bin path
         reformat_bin_path = '/home/ubuntu/Documents/tmp/Protein/hh-suite/build/scripts/reformat.pl'  # reformat bin path
         convertAlignment_bin_path = '/home/ubuntu/Documents/tmp/Protein/CCMpred/scripts/convert_alignment.py'  # ccmpred convertAlignment bin path
@@ -184,5 +184,5 @@ def pconsc4Prediction():
 
 
 if __name__ == '__main__':
-    alnFilePrepare()
+    # alnFilePrepare()
     pconsc4Prediction()
