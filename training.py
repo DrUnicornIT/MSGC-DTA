@@ -167,14 +167,14 @@ if __name__ == '__main__':
 
     #-------------Pretrained Embedding----------------
 
-    d_1d_embeds = np.load(args.data_path + 'results/unique_drug_Mol2Vec_EMB_DAVIS.npy')
-    d_2d_embeds = np.load(args.data_path + 'results/unique_drug_GIN_EMB_DAVIS.npy')
-    d_3d_embeds = np.load(args.data_path + 'results/unique_drug_E3nn_EMB_DAVIS.npy')
+    d_1d_embeds = np.load(args.data_path + f'results/unique_drug_Mol2Vec_EMB_{args.dataset.upper()}.npy')
+    d_2d_embeds = np.load(args.data_path + f'results/unique_drug_GIN_EMB_{args.dataset.upper()}.npy')
+    d_3d_embeds = np.load(args.data_path + f'results/unique_drug_E3nn_EMB_{args.dataset.upper()}.npy')
     d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
 
-    t_1d_embeds = np.load(args.data_path + 'results/unique_protein_ProVec_EMB_DAVIS.npy') 
-    t_2d_embeds = np.load(args.data_path + 'results/unique_protein_BERT_EMB_DAVIS.npy')
-    t_3d_embeds = np.load(args.data_path + 'results/unique_protein_ESM_EMB_DAVIS.npy')
+    t_1d_embeds = np.load(args.data_path + f'results/unique_protein_ProVec_EMB_{args.dataset.upper()}.npy') 
+    t_2d_embeds = np.load(args.data_path + f'results/unique_protein_BERT_EMB_{args.dataset.upper()}.npy')
+    t_3d_embeds = np.load(args.data_path + f'results/unique_protein_ESM_EMB_{args.dataset.upper()}.npy')
     t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
 
 
@@ -217,6 +217,7 @@ if __name__ == '__main__':
     # torch.save(model.state_dict(), "davis_sota_main.pth")
     # torch.save(predictor.state_dict(), "davis_sota_predictor.pth")
     # print("Save done")
+
     # model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')))
     # predictor.load_state_dict(torch.load("davis_sota_predictor.pth", map_location=torch.device('cpu')))
     # print("OK")
@@ -238,8 +239,8 @@ if __name__ == '__main__':
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
     
-    torch.save(model.state_dict(), "davis_sota_main.pth")
-    torch.save(predictor.state_dict(), "davis_sota_predictor.pth")
+    torch.save(model.state_dict(), f"{args.dataset}_sota_main.pth")
+    torch.save(predictor.state_dict(), f"{args.dataset}_sota_predictor.pth")
 
     print('\npredicting for test data')
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
