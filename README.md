@@ -1,5 +1,8 @@
 # MSGC-DTA
 DỰ ĐOÁN MỨC BÁM ĐÍCH CỦA THUỐC SỬ DỤNG HỌC TƯƠNG PHẢN ĐỒ THỊ ĐA QUY MÔ
+<p align="center">
+  <img src="png\MSGC-DTA-overview.png" alt="Kien Truc Mo Hinh">
+</p>
 
 ## Requirements
 - numpy == 1.17.4 
