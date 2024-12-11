@@ -238,6 +238,9 @@ if __name__ == '__main__':
         r = model_evaluate(G, P, full = False)
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
+        if epoch % 1000 == 0: 
+            torch.save(model.state_dict(), f"{args.dataset}_sota_main.pth")
+            torch.save(predictor.state_dict(), f"{args.dataset}_sota_predictor.pth")
     
     torch.save(model.state_dict(), f"{args.dataset}_sota_main.pth")
     torch.save(predictor.state_dict(), f"{args.dataset}_sota_predictor.pth")

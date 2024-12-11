@@ -176,8 +176,8 @@ def train_predict():
                                                     max_lr=args.lr, steps_per_epoch=len(train_loader), epochs=args.epochs, pct_start = 0.0)
     
     
-    model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')).state_dict())
-    predictor.load_state_dict(torch.load("davis_sota_predictor.pth", map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load("davis_sota_main_oldversion.pth", map_location=torch.device('cpu')).state_dict())
+    predictor.load_state_dict(torch.load("davis_sota_predictor_oldversion.pth", map_location=torch.device('cpu')))
     print("OK")
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
