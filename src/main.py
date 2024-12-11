@@ -9,11 +9,23 @@ from torch import nn
 from itertools import chain
 from datetime import datetime
 import wandb
-
+import random
 from data_process import load_data, process_data, get_drug_molecule_graph, get_target_molecule_graph
 
 from utils import GraphDataset, collate, model_evaluate
 from models import CSCoDTA, PredictModule
+
+def set_seed(seed: int = 42) -> None:
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    # When running on the CuDNN backend, two further options must be set
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    # Set a fixed value for the hash seed
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    print(f"Random seed set as {seed}")
 
 def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target_graphs_DataLoader, lr, epoch,
           batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler):
@@ -63,7 +75,8 @@ def train(model, predictor, device, train_loader, drug_graphs_DataLoader, target
 
     # Log the mean loss for the epoch to wandb
     wandb.log({"mean_loss": mean_loss})
-
+    torch.save(model, "davis_sota_main.pth")
+    torch.save(predictor, "davis_sota_predictor.pth")
 
 def test(model, predictor, device, loader, drug_graphs_DataLoader, target_graphs_DataLoader, affinity_graph, drug_pos,
          target_pos):
@@ -196,6 +209,7 @@ if __name__ == '__main__':
     args, _ = parser.parse_known_args()
     # wandb.login(key="b67abb17df1ee7142cd9e8950d8b6d9aca0585cd")
     # Setup Wandb project
+    set_seed(args.seed)
     wandb.init(
         project="MSGC-DTA",
         config = vars(args)
