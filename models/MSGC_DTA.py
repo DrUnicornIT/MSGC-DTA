@@ -6,9 +6,9 @@ from .gat import GATModel
 from .pretrained import PretrainedEmbedding
 from .contrastive import Contrast
 
-class CSCoDTA(nn.Module):
+class MSGCDTA(nn.Module):
     def __init__(self, tau, lam, ns_dims, d_ms_dims, t_ms_dims, d_embeddings, t_embeddings, embedding_dim=128, dropout_rate=0.2):
-        super(CSCoDTA, self).__init__()
+        super(MSGCDTA, self).__init__()
 
         self.output_dim = embedding_dim * 2
 
