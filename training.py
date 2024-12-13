@@ -167,15 +167,36 @@ if __name__ == '__main__':
 
     #-------------Pretrained Embedding----------------
 
+    # d_1d_embeds = np.load(args.data_path + f'results/unique_drug_Mol2Vec_EMB_{args.dataset.upper()}.npy')
+    # d_2d_embeds = np.load(args.data_path + f'results/unique_drug_GIN_EMB_{args.dataset.upper()}.npy')
+    # d_3d_embeds = np.load(args.data_path + f'results/unique_drug_E3nn_EMB_{args.dataset.upper()}.npy')
+    # d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
+
+    # t_1d_embeds = np.load(args.data_path + f'results/unique_protein_ProVec_EMB_{args.dataset.upper()}.npy') 
+    # t_2d_embeds = np.load(args.data_path + f'results/unique_protein_BERT_EMB_{args.dataset.upper()}.npy')
+    # t_3d_embeds = np.load(args.data_path + f'results/unique_protein_ESM_EMB_{args.dataset.upper()}.npy')
+    # t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
+
     d_1d_embeds = np.load(args.data_path + f'results/unique_drug_Mol2Vec_EMB_{args.dataset.upper()}.npy')
+    d_1d_covid = np.load(args.data_path + f'results/unique_drug_Mol2Vec_EMB_COVID.npy')
+
     d_2d_embeds = np.load(args.data_path + f'results/unique_drug_GIN_EMB_{args.dataset.upper()}.npy')
+    d_2d_covid = np.load(args.data_path + f'results/unique_drug_GIN_EMB_COVID.npy')
     d_3d_embeds = np.load(args.data_path + f'results/unique_drug_E3nn_EMB_{args.dataset.upper()}.npy')
-    d_embeddings = (d_1d_embeds, d_2d_embeds, d_3d_embeds)
+    d_3d_covid = np.load(args.data_path + f'results/unique_drug_E3nn_EMB_COVID.npy')
+
+    d_embeddings = (np.vstack((d_1d_embeds,d_1d_covid)), np.vstack((d_2d_embeds,d_2d_covid)), np.vstack((d_3d_embeds,d_3d_covid)))
 
     t_1d_embeds = np.load(args.data_path + f'results/unique_protein_ProVec_EMB_{args.dataset.upper()}.npy') 
+    t_1d_covid = np.load(args.data_path + f'results/unique_protein_ProVec_EMB_COVID.npy') 
+
     t_2d_embeds = np.load(args.data_path + f'results/unique_protein_BERT_EMB_{args.dataset.upper()}.npy')
+    t_2d_covid = np.load(args.data_path + f'results/unique_protein_BERT_EMB_COVID.npy') 
+
     t_3d_embeds = np.load(args.data_path + f'results/unique_protein_ESM_EMB_{args.dataset.upper()}.npy')
-    t_embeddings = (t_1d_embeds, t_2d_embeds, t_3d_embeds)
+    t_3d_covid = np.load(args.data_path + f'results/unique_protein_ESM_EMB_COVID.npy') 
+
+    t_embeddings = (np.vstack((t_1d_embeds,t_1d_covid)), np.vstack((t_2d_embeds,t_2d_covid)), np.vstack((t_3d_embeds,t_3d_covid)))
 
 
     #-------------Training Model----------------
