@@ -9,3 +9,5 @@ wandb/
 .ipynb_checkpoints
 __pycache__
 *.pth
+data-real/
+*.zip
