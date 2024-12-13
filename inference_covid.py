@@ -205,6 +205,6 @@ if __name__ == '__main__':
     print(P[-8:])
 
     print(len(G[:-8]))
-    r = model_evaluate(G[:-8], P[:-8], full = False)
-    print("result:", r)
-    print({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
+    # r = model_evaluate(G[:-8], P[:-8], full = False)
+    # print("result:", r)
+    # print({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
