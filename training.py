@@ -246,6 +246,6 @@ if __name__ == '__main__':
     print('\npredicting for test data')
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                 affinity_graph, drug_pos, target_pos)
-    result = model_evaluate(G, P, full = True)
+    result = model_evaluate(G[:-8], P[:-8], full = True)
     print("result:", result)
     wandb.finish()
