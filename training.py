@@ -231,6 +231,9 @@ if __name__ == '__main__':
         G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
         r = model_evaluate(G, P, full = False)
+        print(G[-8: ])
+        print(P[-8: ])
+        r = model_evaluate(G[:-8], P[:-8], full = False)
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
         if epoch % 1000 == 0: 
