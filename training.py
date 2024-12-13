@@ -231,7 +231,9 @@ if __name__ == '__main__':
               args.batch_size, affinity_graph, drug_pos, target_pos, optimizer, scheduler)
         G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
-        r = model_evaluate(G, P, full = False)
+        print(len(G))
+        print(len(G[:-8]))
+        r = model_evaluate(G[:-8], P[:-8], full = False)
         print("result:", r)
         wandb.log({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
     
@@ -241,6 +243,6 @@ if __name__ == '__main__':
     print('\npredicting for test data')
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                 affinity_graph, drug_pos, target_pos)
-    result = model_evaluate(G, P, full = True)
+    result = model_evaluate(G[:-8], P[:-8], full = True)
     print("result:", result)
     wandb.finish()
