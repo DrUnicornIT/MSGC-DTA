@@ -155,56 +155,14 @@ if __name__ == '__main__':
     model.to(device)
     predictor.to(device)
 
-    # model.load_state_dict(torch.load("davis_sota_main.pth", map_location=torch.device('cpu')))
-    predictor.load_state_dict(torch.load("checkpoint/davis_sota_predictor_2.pth", map_location=torch.device('cpu')))
-    state_dict = torch.load("checkpoint/davis_sota_main_2.pth", map_location=torch.device('cpu'))
-
-    pretrained_weights = state_dict['affinity_graph_conv.graph_conv.conv_layers.0.lin.weight']
-    adjusted_weights = torch.zeros(512, 521)  
-    adjusted_weights[:, :512] = pretrained_weights
-    state_dict['affinity_graph_conv.graph_conv.conv_layers.0.lin.weight'] = adjusted_weights
-
-    drug_embedding_0 = state_dict['drug_embeddings.params.0'] 
-    adjusted_drug_embedding_0 = torch.zeros(76, 100)           
-    adjusted_drug_embedding_0[:68, :] = drug_embedding_0       
-    state_dict['drug_embeddings.params.0'] = adjusted_drug_embedding_0
-
-
-    drug_embedding_1 = state_dict['drug_embeddings.params.1'] 
-    adjusted_drug_embedding_1 = torch.zeros(76, 300)           
-    adjusted_drug_embedding_1[:68, :] = drug_embedding_1     
-    state_dict['drug_embeddings.params.1'] = adjusted_drug_embedding_1
-
-    drug_embedding_2 = state_dict['drug_embeddings.params.2']
-    adjusted_drug_embedding_2 = torch.zeros(76, 512)          
-    adjusted_drug_embedding_2[:68, :] = drug_embedding_2     
-    state_dict['drug_embeddings.params.2'] = adjusted_drug_embedding_2
-
-    target_embedding_0 = state_dict['target_embeddings.params.0'] 
-    adjusted_target_embedding_0 = torch.zeros(443, 100)           
-    adjusted_target_embedding_0[:442, :] = target_embedding_0    
-    state_dict['target_embeddings.params.0'] = adjusted_target_embedding_0
-
-    target_embedding_1 = state_dict['target_embeddings.params.1']
-    adjusted_target_embedding_1 = torch.zeros(443, 768)           
-    adjusted_target_embedding_1[:442, :] = target_embedding_1    
-    state_dict['target_embeddings.params.1'] = adjusted_target_embedding_1
-
-    target_embedding_2 = state_dict['target_embeddings.params.2']
-    adjusted_target_embedding_2 = torch.zeros(443, 1280)         
-    adjusted_target_embedding_2[:442, :] = target_embedding_2     
-    state_dict['target_embeddings.params.2'] = adjusted_target_embedding_2
-
-
-
-    model.load_state_dict(state_dict)
+    model.load_state_dict(torch.load("checkpoint/davis_sota_main_cv.pth", map_location=torch.device('cpu')))
+    predictor.load_state_dict(torch.load("checkpoint/davis_sota_predictor_cv.pth", map_location=torch.device('cpu')))
 
     G, P = test(model, predictor, device, test_loader, drug_graphs_DataLoader, target_graphs_DataLoader,
                     affinity_graph, drug_pos, target_pos)
                     
     print(P[-8:])
-
     print(len(G[:-8]))
-    # r = model_evaluate(G[:-8], P[:-8], full = False)
-    # print("result:", r)
-    # print({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
+    r = model_evaluate(G[:-8], P[:-8], full = False)
+    print("result:", r)
+    print({"test_MSE": r[0], "test_RM2": r[1], "test_CI_DeepDTA": r[2], "test_CI_GraphDTA": r[3]})
